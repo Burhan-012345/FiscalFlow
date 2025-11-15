@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loading - FiscalFlow</title>
+    <style>
+      :root {
+        --primary-blue: #0066ff;
+        --primary-white: #ffffff;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--primary-white);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .loading-container {
+        text-align: center;
+        animation: fadeIn 1s ease-in;
+      }
+
+      .logo {
+        height: 80px;
+        margin-bottom: 20px;
+        animation: pulse 2s infinite;
+      }
+
+      .loading-text {
+        color: var(--primary-blue);
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .subtext {
+        color: #6c757d;
+        font-size: 1rem;
+      }
+
+      .progress-bar {
+        width: 200px;
+        height: 4px;
+        background: #e9ecef;
+        border-radius: 2px;
+        margin: 20px auto;
+        overflow: hidden;
+      }
+
+      .progress {
+        height: 100%;
+        background: var(--primary-blue);
+        border-radius: 2px;
+        animation: progress 3s ease-in-out;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.05);
+          opacity: 0.8;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes progress {
+        0% {
+          width: 0%;
+        }
+        100% {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loading-container">
+      <img
+        src="{{ url_for('static', filename='img/logo.svg') }}"
+        alt="FiscalFlow"
+        class="logo"
+      />
+      <div class="loading-text">Setting up your FiscalFlow experience</div>
+      <div class="subtext">Please wait while we prepare your dashboard</div>
+      <div class="progress-bar">
+        <div class="progress"></div>
+      </div>
+    </div>
+
+    <script>
+      // Redirect after 3 seconds or when progress completes
+      setTimeout(function () {
+        window.location.href = "{{ redirect_url }}";
+      }, 3000);
+    </script>
+  </body>
+</html>

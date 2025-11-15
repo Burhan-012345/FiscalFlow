@@ -1,0 +1,220 @@
+<!-- Notification Center -->
+<div class="dropdown">
+  <button
+    class="btn btn-link nav-link position-relative p-0"
+    type="button"
+    id="notificationDropdown"
+    data-bs-toggle="dropdown"
+    aria-expanded="false"
+  >
+    <i class="fas fa-bell fa-lg"></i>
+    {% if unread_count > 0 %}
+    <span
+      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+    >
+      {{ unread_count }}
+      <span class="visually-hidden">unread notifications</span>
+    </span>
+    {% endif %}
+  </button>
+  <div
+    class="dropdown-menu dropdown-menu-end notification-dropdown"
+    aria-labelledby="notificationDropdown"
+  >
+    <div
+      class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom"
+    >
+      <h6 class="mb-0">Notifications</h6>
+      <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-primary" id="markAllRead">
+          <small>Mark all read</small>
+        </button>
+        <button
+          class="btn btn-sm btn-outline-secondary"
+          id="notificationSettings"
+        >
+          <i class="fas fa-cog"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="notification-list" style="max-height: 400px; overflow-y: auto">
+      {% if notifications %} {% for notification in notifications %}
+      <div
+        class="notification-item {% if not notification.is_read %}unread{% endif %}"
+        data-notification-id="{{ notification.id }}"
+      >
+        <div class="d-flex gap-3 p-3 border-bottom">
+          <div class="flex-shrink-0">
+            <div
+              class="notification-icon bg-{{ notification.type }} text-white rounded-circle d-flex align-items-center justify-content-center"
+              style="width: 40px; height: 40px"
+            >
+              <i class="fas fa-{{ notification.icon }}"></i>
+            </div>
+          </div>
+          <div class="flex-grow-1">
+            <h6 class="mb-1">{{ notification.title }}</h6>
+            <p class="mb-1 small text-muted">{{ notification.message }}</p>
+            <small class="text-muted">{{ notification.time }}</small>
+          </div>
+          <div class="flex-shrink-0">
+            {% if not notification.is_read %}
+            <span class="badge bg-primary">New</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %} {% else %}
+      <div class="text-center py-4">
+        <i class="fas fa-bell-slash fa-2x text-muted mb-3"></i>
+        <p class="text-muted mb-0">No notifications</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="px-3 py-2 border-top bg-light">
+      <div class="d-flex justify-content-between align-items-center">
+        <a
+          href="{{ url_for('notification_center') }}"
+          class="btn btn-sm btn-outline-primary"
+          >View All</a
+        >
+        <small class="text-muted"
+          >{{ notifications|length }} notifications</small
+        >
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .notification-dropdown {
+    width: 400px;
+    max-width: 90vw;
+  }
+  .notification-item {
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+  }
+  .notification-item:hover {
+    background-color: var(--light-blue);
+  }
+  .notification-item.unread {
+    background-color: rgba(0, 102, 255, 0.05);
+    border-left: 3px solid var(--primary-blue);
+  }
+  .notification-icon {
+    font-size: 0.9rem;
+  }
+  .notification-list::-webkit-scrollbar {
+    width: 6px;
+  }
+  .notification-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  .notification-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+  .notification-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Mark notification as read when clicked
+    document.querySelectorAll(".notification-item").forEach((item) => {
+      item.addEventListener("click", function () {
+        const notificationId = this.dataset.notificationId;
+        markAsRead(notificationId);
+        this.classList.remove("unread");
+        this.querySelector(".badge")?.remove();
+        updateUnreadCount();
+      });
+    });
+
+    // Mark all as read
+    document
+      .getElementById("markAllRead")
+      ?.addEventListener("click", function (e) {
+        e.stopPropagation();
+        document
+          .querySelectorAll(".notification-item.unread")
+          .forEach((item) => {
+            const notificationId = item.dataset.notificationId;
+            markAsRead(notificationId);
+            item.classList.remove("unread");
+            item.querySelector(".badge")?.remove();
+          });
+        updateUnreadCount();
+        showNotification("All notifications marked as read", "success");
+      });
+
+    // Notification settings
+    document
+      .getElementById("notificationSettings")
+      ?.addEventListener("click", function (e) {
+        e.stopPropagation();
+        // In a real app, this would open notification settings
+        showNotification("Notification settings opened", "info");
+      });
+
+    function markAsRead(notificationId) {
+      // In a real app, this would make an API call
+      fetch(`/api/notifications/${notificationId}/read`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCSRFToken(),
+        },
+      }).catch((error) => {
+        console.error("Failed to mark notification as read:", error);
+      });
+    }
+
+    function updateUnreadCount() {
+      const unreadCount = document.querySelectorAll(
+        ".notification-item.unread"
+      ).length;
+      const badge = document.querySelector("#notificationDropdown .badge");
+
+      if (unreadCount > 0) {
+        if (badge) {
+          badge.textContent = unreadCount;
+        } else {
+          const newBadge = document.createElement("span");
+          newBadge.className =
+            "position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger";
+          newBadge.textContent = unreadCount;
+          document.querySelector("#notificationDropdown").appendChild(newBadge);
+        }
+      } else if (badge) {
+        badge.remove();
+      }
+    }
+
+    function getCSRFToken() {
+      return (
+        document
+          .querySelector('meta[name="csrf-token"]')
+          ?.getAttribute("content") || ""
+      );
+    }
+
+    // Real-time notifications (WebSocket simulation)
+    function simulateNewNotification() {
+      // This would be replaced with actual WebSocket implementation
+      if (Math.random() < 0.1) {
+        // 10% chance for demo
+        showNotification("New transaction recorded", "info");
+        // In real app, you would refresh notifications or use WebSocket
+      }
+    }
+
+    // Check for new notifications every 30 seconds
+    setInterval(simulateNewNotification, 30000);
+  });
+</script>
