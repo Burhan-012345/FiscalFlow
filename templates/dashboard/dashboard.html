@@ -336,6 +336,31 @@
   </div>
 </div>
 
+<!-- Hidden admin access for authorized users -->
+{% if current_user.role in ['owner', 'admin'] %}
+<div
+  style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    opacity: 0.1;
+    transition: opacity 0.3s;
+  "
+  onmouseover="this.style.opacity='1'"
+  onmouseout="this.style.opacity='0.1'"
+  id="hiddenAdminAccess"
+>
+  <a
+    href="{{ url_for('secret_admin') }}"
+    class="btn btn-sm btn-outline-secondary"
+    data-bs-toggle="tooltip"
+    title="Secret Admin Access"
+  >
+    <i class="fas fa-user-secret"></i>
+  </a>
+</div>
+{% endif %}
+
 <script>
   // Initialize tooltips
   document.addEventListener("DOMContentLoaded", function () {
