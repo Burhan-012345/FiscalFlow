@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -107,11 +107,6 @@
 
           <ul class="navbar-nav ms-auto">
             {% if current_user.is_authenticated %}
-            <li class="nav-item">
-              <button class="nav-link dark-mode-toggle" id="darkModeToggle">
-                <i class="fas fa-moon"></i>
-              </button>
-            </li>
             <li class="nav-item dropdown">
               <a
                 class="nav-link dropdown-toggle"
@@ -200,7 +195,7 @@
             </h5>
             <button
               type="button"
-              class="btn-close btn-close-white"
+              class="btn-close"
               data-bs-dismiss="modal"
             ></button>
           </div>
