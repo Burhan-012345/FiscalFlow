@@ -39,7 +39,11 @@
 
             <div class="mb-4">
               <label for="currency" class="form-label">Currency</label>
-              {{ form.currency(class="form-select", id="currency") }}
+              <select class="form-select" id="currency" name="currency" disabled>
+                <option value="INR" selected>Indian Rupee (₹)</option>
+              </select>
+              <input type="hidden" name="currency" value="INR">
+              <div class="form-text">All accounts use Indian Rupees as currency</div>
             </div>
 
             <div class="d-grid">
