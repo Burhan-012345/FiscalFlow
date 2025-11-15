@@ -39,14 +39,11 @@ class ResetPasswordForm(FlaskForm):
     ])
 
 class AccountForm(FlaskForm):
-    name = StringField('Account Name', validators=[DataRequired(), Length(max=100)])
-    description = TextAreaField('Description')
+    name = StringField('Account Name', validators=[DataRequired(), Length(min=2, max=100)])
+    description = TextAreaField('Description', validators=[Length(max=500)])
     currency = SelectField('Currency', choices=[
-        ('USD', 'US Dollar'),
-        ('EUR', 'Euro'),
-        ('GBP', 'British Pound'),
-        ('JPY', 'Japanese Yen')
-    ])
+        ('INR', 'Indian Rupee (₹)')  # Only INR option
+    ], default='INR')
 
 class CustomerForm(FlaskForm):
     name = StringField('Customer Name', validators=[DataRequired(), Length(max=100)])
