@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Transaction Report - {{ customer.name }}</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 2cm;
+        @top-center {
+          content: "FiscalFlow - Transaction Report";
+          font-size: 12px;
+          font-family: Arial, sans-serif;
+          color: #1565c0;
+        }
+        @bottom-center {
+          content: "Page " counter(page) " of " counter(pages);
+          font-size: 10px;
+          font-family: Arial, sans-serif;
+          color: #1565c0;
+        }
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        margin: 0;
+        padding: 0;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #1565c0;
+        background-color: #ffffff;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 3px solid #1565c0;
+        padding-bottom: 20px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+        margin: 0 0 10px 0;
+        color: #1565c0;
+        font-weight: bold;
+      }
+
+      .header h2 {
+        font-size: 18px;
+        margin: 0;
+        color: #1976d2;
+        font-weight: normal;
+      }
+
+      .customer-info {
+        margin-bottom: 25px;
+        background: #f8fbff;
+        padding: 20px;
+        border-radius: 8px;
+        border: 2px solid #e3f2fd;
+      }
+
+      .customer-info p {
+        margin: 8px 0;
+        font-size: 13px;
+        color: #1565c0;
+      }
+
+      .customer-info strong {
+        color: #0d47a1;
+        font-weight: bold;
+      }
+
+      .balance-highlight {
+        font-size: 14px;
+        font-weight: bold;
+        color: #1565c0;
+        background-color: #e3f2fd;
+        padding: 8px 12px;
+        border-radius: 6px;
+        display: inline-block;
+        margin-top: 5px;
+        border: 1px solid #bbdefb;
+      }
+
+      .transaction-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        font-size: 11px;
+        border: 2px solid #1565c0;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .transaction-table th {
+        background: #1565c0;
+        color: white;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 10px;
+        letter-spacing: 0.5px;
+        padding: 12px 8px;
+        text-align: left;
+        border: 1px solid #0d47a1;
+      }
+
+      .transaction-table td {
+        padding: 10px 8px;
+        border: 1px solid #bbdefb;
+        color: #1565c0;
+      }
+
+      .transaction-table tr:nth-child(even) {
+        background-color: #f8fbff;
+      }
+
+      .transaction-table tr:nth-child(odd) {
+        background-color: #ffffff;
+      }
+
+      .summary {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f8fbff;
+        border: 2px solid #e3f2fd;
+        border-radius: 8px;
+      }
+
+      .summary p {
+        margin: 8px 0;
+        font-size: 13px;
+        color: #1565c0;
+      }
+
+      .summary strong {
+        color: #0d47a1;
+      }
+
+      .cash-in {
+        color: #1565c0;
+        font-weight: bold;
+        background-color: #e8f5e8;
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #c8e6c9;
+      }
+
+      .cash-out {
+        color: #1565c0;
+        font-weight: bold;
+        background-color: #ffebee;
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #ffcdd2;
+      }
+
+      .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #1565c0;
+        font-style: italic;
+        background-color: #f8fbff;
+        border: 2px dashed #bbdefb;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+
+      .no-data h3 {
+        color: #1565c0;
+        margin-bottom: 10px;
+      }
+
+      .report-meta {
+        font-size: 10px;
+        color: #1565c0;
+        text-align: center;
+        margin-top: 30px;
+        padding: 15px;
+        background-color: #f8fbff;
+        border-radius: 8px;
+        border-top: 2px solid #bbdefb;
+      }
+
+      .transaction-type {
+        text-transform: capitalize;
+        font-weight: bold;
+      }
+
+      .section-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #1565c0;
+        margin: 25px 0 15px 0;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #e3f2fd;
+      }
+
+      .positive-balance {
+        color: #1565c0;
+        background-color: #e8f5e8;
+      }
+
+      .negative-balance {
+        color: #1565c0;
+        background-color: #ffebee;
+      }
+
+      .amount-cell {
+        font-weight: bold;
+        text-align: right;
+      }
+
+      .footer-note {
+        text-align: center;
+        font-size: 10px;
+        color: #1976d2;
+        margin-top: 20px;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>FISCALFLOW TRANSACTION REPORT</h1>
+      <h2>{{ customer.name }}</h2>
+    </div>
+
+    <div class="customer-info">
+      <p><strong>Customer Name:</strong> {{ customer.name }}</p>
+      <p>
+        <strong>Email Address:</strong> {{ customer.email or 'Not Provided' }}
+      </p>
+      <p>
+        <strong>Phone Number:</strong> {{ customer.phone or 'Not Provided' }}
+      </p>
+      <p>
+        <strong>Current Balance:</strong>
+        <span
+          class="balance-highlight {{ 'positive-balance' if customer.current_balance >= 0 else 'negative-balance' }}"
+        >
+          ₹{{ "%.2f"|format(customer.current_balance) }}
+        </span>
+      </p>
+      {% if customer.credit_limit > 0 %}
+      <p>
+        <strong>Credit Limit:</strong> ₹{{ "%.2f"|format(customer.credit_limit)
+        }}
+      </p>
+      {% endif %}
+    </div>
+
+    <div class="section-title">TRANSACTION HISTORY</div>
+
+    {% if transactions %}
+    <table class="transaction-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Transaction Type</th>
+          <th>Amount (₹)</th>
+          <th>Category</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for transaction in transactions %}
+        <tr>
+          <td>{{ transaction.date.strftime('%Y-%m-%d') }}</td>
+          <td class="transaction-type">
+            {{ transaction.type.replace('_', ' ').title() }}
+          </td>
+          <td
+            class="amount-cell {{ 'cash-in' if transaction.type == 'cash_in' else 'cash-out' }}"
+          >
+            ₹{{ "%.2f"|format(transaction.amount) }}
+          </td>
+          <td>{{ transaction.category or 'General' }}</td>
+          <td>{{ transaction.notes or 'No description' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="no-data">
+      <h3>No Transaction Records</h3>
+      <p>No transaction history available for this customer.</p>
+    </div>
+    {% endif %}
+
+    <div class="section-title">REPORT SUMMARY</div>
+
+    <div class="summary">
+      <p>
+        <strong>Total Number of Transactions:</strong> {{ transactions|length }}
+      </p>
+      <p>
+        <strong>Total Cash In:</strong>
+        <span class="cash-in"
+          >₹{{ "%.2f"|format(transactions|selectattr('type', 'equalto',
+          'cash_in')|map(attribute='amount')|sum) }}</span
+        >
+      </p>
+      <p>
+        <strong>Total Cash Out:</strong>
+        <span class="cash-out"
+          >₹{{ "%.2f"|format(transactions|selectattr('type', 'equalto',
+          'cash_out')|map(attribute='amount')|sum) }}</span
+        >
+      </p>
+      <p><strong>Reporting Period:</strong> Complete Transaction History</p>
+      <p>
+        <strong>Account Status:</strong> {{ 'Active' if transactions else 'No
+        Activity' }}
+      </p>
+    </div>
+
+    <div class="footer-note">
+      This report contains confidential financial information. Please handle
+      with appropriate security measures.
+    </div>
+
+    <div class="report-meta">
+      <p>
+        <strong>Report Generated:</strong> {{ generated_at.strftime('%Y-%m-%d at
+        %H:%M UTC') }}
+      </p>
+      <p><strong>System:</strong> FiscalFlow Financial Management</p>
+      <p><strong>Currency:</strong> Indian Rupee (₹)</p>
+      <p>
+        <strong>Report ID:</strong> {{ customer.id }}_{{
+        generated_at.strftime('%Y%m%d%H%M') }}
+      </p>
+    </div>
+  </body>
+</html>

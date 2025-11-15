@@ -1,0 +1,155 @@
+{% extends "base.html" %} {% block title %}FiscalFlow - Smart Financial
+Management{% endblock %} {% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-primary text-white py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h1 class="display-4 fw-bold mb-4">
+          Smart Financial Management for Modern Businesses
+        </h1>
+        <p class="lead mb-4">
+          Streamline your finances, track transactions, and grow your business
+          with FiscalFlow's powerful tools and analytics.
+        </p>
+        <div class="d-flex gap-3 flex-wrap">
+          <a
+            href="{{ url_for('register_step1') }}"
+            class="btn btn-light btn-lg"
+          >
+            <i class="fas fa-rocket me-2"></i>Get Started Free
+          </a>
+          <a href="#features" class="btn btn-outline-light btn-lg">
+            <i class="fas fa-play-circle me-2"></i>Learn More
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-6 text-center">
+        <img
+          src="{{ url_for('static', filename='img/logo.svg') }}"
+          alt="FiscalFlow Dashboard"
+          class="img-fluid"
+          style="max-height: 400px"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">Powerful Features for Your Business</h2>
+      <p class="text-muted">
+        Everything you need to manage your finances efficiently
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <div class="feature-icon mb-3">
+              <i class="fas fa-users fa-3x text-primary"></i>
+            </div>
+            <h5>Customer Management</h5>
+            <p class="text-muted">
+              Organize customer information, track balances, and manage
+              relationships efficiently.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <div class="feature-icon mb-3">
+              <i class="fas fa-exchange-alt fa-3x text-primary"></i>
+            </div>
+            <h5>Transaction Tracking</h5>
+            <p class="text-muted">
+              Monitor cash flow with detailed transaction records and real-time
+              balance updates.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <div class="feature-icon mb-3">
+              <i class="fas fa-chart-pie fa-3x text-primary"></i>
+            </div>
+            <h5>Advanced Analytics</h5>
+            <p class="text-muted">
+              Gain insights with comprehensive reports and visual analytics
+              dashboards.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <div class="feature-icon mb-3">
+              <i class="fas fa-file-pdf fa-3x text-primary"></i>
+            </div>
+            <h5>PDF & Excel Reports</h5>
+            <p class="text-muted">
+              Generate professional reports in multiple formats for sharing and
+              analysis.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <div class="feature-icon mb-3">
+              <i class="fas fa-envelope fa-3x text-primary"></i>
+            </div>
+            <h5>Email Notifications</h5>
+            <p class="text-muted">
+              Keep customers informed with automated transaction and balance
+              updates.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <div class="feature-icon mb-3">
+              <i class="fas fa-shield-alt fa-3x text-primary"></i>
+            </div>
+            <h5>Secure & Reliable</h5>
+            <p class="text-muted">
+              Bank-level security with regular backups and data protection.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="bg-light py-5">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-3">Ready to Transform Your Financial Management?</h2>
+    <p class="text-muted mb-4">
+      Join thousands of businesses using FiscalFlow to streamline their
+      finances.
+    </p>
+    <a href="{{ url_for('register_step1') }}" class="btn btn-primary btn-lg">
+      <i class="fas fa-rocket me-2"></i>Start Your Free Trial
+    </a>
+  </div>
+</section>
+{% endblock %}
