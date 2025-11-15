@@ -423,6 +423,52 @@ def register_routes(app):
         flash('You have been logged out successfully.', 'info')
         return redirect(url_for('index'))
     
+    # Secret Admin Access Routes
+    @app.route('/admin-access')
+    @login_required
+    def admin_access():
+        """Secret admin access page"""
+        if current_user.role not in ['owner', 'admin']:
+            flash('Access denied', 'danger')
+            return redirect(url_for('dashboard'))
+        return redirect('/admin')
+    
+    @app.route('/secret-admin')
+    @login_required
+    def secret_admin():
+        """Alternative secret admin access"""
+        if current_user.role not in ['owner', 'admin']:
+            flash('Access denied', 'danger')
+            return redirect(url_for('dashboard'))
+        return redirect('/admin')
+    
+    @app.route('/tap-admin')
+    @login_required
+    def tap_admin():
+        """Secret tap-based admin access for mobile"""
+        if current_user.role not in ['owner', 'admin']:
+            flash('Access denied', 'danger')
+            return redirect(url_for('dashboard'))
+        return redirect('/admin')
+    
+    @app.route('/profile/admin-access')
+    @login_required
+    def profile_admin_access():
+        """Hidden admin access via profile page"""
+        if current_user.role not in ['owner', 'admin']:
+            flash('Access denied', 'danger')
+            return redirect(url_for('profile'))
+        return redirect('/admin')
+    
+    @app.route('/api/check-admin-access')
+    @login_required
+    def check_admin_access():
+        """API endpoint to check if user has admin access"""
+        return jsonify({
+            'has_access': current_user.role in ['owner', 'admin'],
+            'role': current_user.role
+        })
+    
     # Dashboard Route
     @app.route('/dashboard')
     @login_required
