@@ -458,32 +458,53 @@ def register_routes(app):
                              total_cash_in=total_cash_in,
                              total_cash_out=total_cash_out)
     
+    # Add Account Route - Fixed Version
     @app.route('/add-account', methods=['GET', 'POST'])
     @login_required
     def add_account():
         form = AccountForm()
+        
+        # Debug information
+        print(f"Method: {request.method}")
+        print(f"Form submitted: {form.is_submitted()}")
+        
         if form.validate_on_submit():
-            account = Account(
-                name=form.name.data,
-                description=form.description.data,
-                currency=form.currency.data,
-                user_id=current_user.id
-            )
-            db.session.add(account)
-            db.session.commit()
+            print("Form validated successfully!")
+            print(f"Name: {form.name.data}")
+            print(f"Description: {form.description.data}")
+            print(f"Currency: {form.currency.data}")
             
-            # Create notification
-            notification = Notification(
-                user_id=current_user.id,
-                title='Account Created',
-                message=f'Account "{account.name}" was successfully created.',
-                type='success'
-            )
-            db.session.add(notification)
-            db.session.commit()
-            
-            flash('Account created successfully!', 'success')
-            return redirect(url_for('add_customer', account_id=account.id))
+            try:
+                account = Account(
+                    name=form.name.data,
+                    description=form.description.data,
+                    currency=form.currency.data,  # This will be 'INR'
+                    user_id=current_user.id
+                )
+                db.session.add(account)
+                db.session.commit()
+                
+                # Create notification
+                notification = Notification(
+                    user_id=current_user.id,
+                    title='Account Created',
+                    message=f'Account "{account.name}" was successfully created.',
+                    type='success'
+                )
+                db.session.add(notification)
+                db.session.commit()
+                
+                flash('Account created successfully!', 'success')
+                return redirect(url_for('add_customer', account_id=account.id))
+                
+            except Exception as e:
+                print(f"Error creating account: {str(e)}")
+                db.session.rollback()
+                flash('Error creating account. Please try again.', 'danger')
+        else:
+            print(f"Form validation failed. Errors: {form.errors}")
+            if form.is_submitted():
+                flash('Please fix the errors below.', 'danger')
         
         return render_template('dashboard/add_account.html', form=form)
     
