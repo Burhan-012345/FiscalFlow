@@ -81,7 +81,7 @@ class Account(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    currency = db.Column(db.String(10), default='USD')
+    currency = db.Column(db.String(10), default='INR')  # Changed from USD to INR
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
 
