@@ -1,0 +1,211 @@
+{% extends "base.html" %} {% block title %}User Information - FiscalFlow{%
+endblock %} {% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <!-- Registration Steps -->
+      <div class="registration-steps">
+        <div class="step completed">
+          <div class="step-number">1</div>
+          <div class="step-label">Get Started</div>
+        </div>
+        <div class="step active">
+          <div class="step-number">2</div>
+          <div class="step-label">User Info</div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-label">Verify</div>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-label">Password</div>
+        </div>
+      </div>
+
+      <div class="card fade-in">
+        <div class="card-header text-center">
+          <h4 class="mb-0">
+            <i class="fas fa-user-circle me-2"></i>User Information
+          </h4>
+        </div>
+        <div class="card-body p-4">
+          <form method="POST" action="{{ url_for('register_step2') }}">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              <label for="name" class="form-label">Full Name</label>
+              {{ form.name(class="form-control", id="name", placeholder="Enter
+              your full name") }} {% if form.name.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in form.name.errors %} {{ error }} {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="mb-4">
+              <label for="email" class="form-label">Email Address</label>
+              {{ form.email(class="form-control", id="email", placeholder="Enter
+              your email address") }} {% if form.email.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in form.email.errors %} {{ error }} {% endfor %}
+              </div>
+              {% endif %}
+              <div class="form-text">
+                We'll send a verification code to this email.
+              </div>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-lg">
+                Continue <i class="fas fa-arrow-right ms-2"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+        <div class="card-footer text-center">
+          <p class="mb-0">
+            Already have an account?
+            <a href="{{ url_for('login') }}" class="text-decoration-none"
+              >Sign in here</a
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- register_step2.html - Style Section Only -->
+<style>
+  .registration-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  .registration-steps::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #e9ecef;
+    z-index: 1;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    border: 3px solid white;
+  }
+
+  .step.active .step-number {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+  }
+
+  .step.completed .step-number {
+    background-color: #198754;
+    color: white;
+  }
+
+  .step-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6c757d;
+  }
+
+  .step.active .step-label {
+    color: #007bff;
+    font-weight: 600;
+  }
+
+  .step.completed .step-label {
+    color: #198754;
+  }
+
+  .card {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.75rem;
+  }
+
+  .card-header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+    padding: 1.5rem;
+  }
+
+  .card-header h4 {
+    font-weight: 600;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004494 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+  }
+
+  .form-control {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+
+  .fade-in {
+    animation: fadeIn 0.6s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .card-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    border-radius: 0 0 0.75rem 0.75rem !important;
+  }
+</style>
+{% endblock %}

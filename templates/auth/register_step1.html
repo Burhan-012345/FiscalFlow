@@ -1,0 +1,176 @@
+{% extends "base.html" %} {% block title %}Get Started - FiscalFlow{% endblock
+%} {% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+      <div class="fade-in">
+        <img
+          src="{{ url_for('static', filename='img/logo.svg') }}"
+          alt="FiscalFlow"
+          class="mb-4"
+          height="80"
+        />
+        <h1 class="display-5 fw-bold text-primary mb-3">
+          Welcome to FiscalFlow
+        </h1>
+        <p class="lead text-muted mb-4">
+          Smart financial management for modern businesses. Get started in just
+          a few simple steps.
+        </p>
+
+        <div class="row g-4 mb-5">
+          <div class="col-md-4">
+            <div class="card h-100 border-0">
+              <div class="card-body">
+                <div class="text-primary mb-3">
+                  <i class="fas fa-user-plus fa-2x"></i>
+                </div>
+                <h5>Create Account</h5>
+                <p class="text-muted small">
+                  Sign up with your basic information
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 border-0">
+              <div class="card-body">
+                <div class="text-primary mb-3">
+                  <i class="fas fa-shield-alt fa-2x"></i>
+                </div>
+                <h5>Verify Email</h5>
+                <p class="text-muted small">
+                  Secure your account with OTP verification
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 border-0">
+              <div class="card-body">
+                <div class="text-primary mb-3">
+                  <i class="fas fa-rocket fa-2x"></i>
+                </div>
+                <h5>Get Started</h5>
+                <p class="text-muted small">Start managing your finances</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-grid gap-3 d-md-flex justify-content-center">
+          <a
+            href="{{ url_for('register_step2') }}"
+            class="btn btn-primary btn-lg px-5"
+          >
+            <i class="fas fa-play-circle me-2"></i>Get Started
+          </a>
+          <a
+            href="{{ url_for('login') }}"
+            class="btn btn-outline-primary btn-lg px-5"
+          >
+            <i class="fas fa-sign-in-alt me-2"></i>I Have an Account
+          </a>
+        </div>
+
+        <div class="mt-5">
+          <h6 class="text-muted mb-3">Trusted by businesses worldwide</h6>
+          <div class="d-flex justify-content-center gap-4 text-muted">
+            <div class="feature-item">
+              <i class="fas fa-check-circle text-success me-1"></i>
+              Secure & Reliable
+            </div>
+            <div class="feature-item">
+              <i class="fas fa-check-circle text-success me-1"></i>
+              24/7 Support
+            </div>
+            <div class="feature-item">
+              <i class="fas fa-check-circle text-success me-1"></i>
+              Free Trial
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- register_step1.html - Style Section Only -->
+<style>
+  .fade-in {
+    animation: fadeIn 0.8s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .card {
+    border: none;
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004494 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3);
+  }
+
+  .btn-outline-primary {
+    border: 2px solid #007bff;
+    color: #007bff;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .btn-outline-primary:hover {
+    background-color: #007bff;
+    border-color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.2);
+  }
+
+  .text-primary {
+    color: #007bff !important;
+  }
+
+  .feature-item {
+    font-weight: 500;
+    color: #495057;
+  }
+
+  .display-5 {
+    font-weight: 700;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+</style>
+{% endblock %}
