@@ -1,0 +1,921 @@
+{% extends "base.html" %} {% block title %}My Profile - FiscalFlow{% endblock %}
+{% block extra_css %}
+<style>
+  .profile-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .avatar-container {
+    position: relative;
+    display: inline-block;
+  }
+
+  .avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid white;
+    object-fit: cover;
+  }
+
+  .avatar-edit {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: #1565c0;
+    color: white;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    cursor: pointer;
+  }
+
+  .stats-card {
+    border-left: 4px solid;
+    transition: transform 0.2s ease;
+  }
+
+  .stats-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .stats-card.primary {
+    border-left-color: #1565c0;
+  }
+
+  .stats-card.success {
+    border-left-color: #28a745;
+  }
+
+  .stats-card.warning {
+    border-left-color: #ffc107;
+  }
+
+  .stats-card.info {
+    border-left-color: #17a2b8;
+  }
+
+  .activity-item {
+    border-left: 3px solid #e9ecef;
+    padding-left: 1rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  .activity-item::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #1565c0;
+    border: 2px solid white;
+  }
+
+  .activity-item.recent::before {
+    background: #28a745;
+  }
+
+  .nav-tabs .nav-link.active {
+    font-weight: 600;
+    border-bottom: 3px solid #1565c0;
+  }
+
+  .password-strength {
+    height: 4px;
+    border-radius: 2px;
+    margin-top: 5px;
+    transition: all 0.3s ease;
+  }
+
+  .password-weak {
+    background-color: #dc3545;
+    width: 25%;
+  }
+  .password-fair {
+    background-color: #ffc107;
+    width: 50%;
+  }
+  .password-good {
+    background-color: #17a2b8;
+    width: 75%;
+  }
+  .password-strong {
+    background-color: #28a745;
+    width: 100%;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container-fluid py-4">
+  <!-- Profile Header -->
+  <div class="profile-header">
+    <div class="row align-items-center">
+      <div class="col-auto">
+        <div class="avatar-container">
+          <img
+            src="{{ current_user.avatar_url or url_for('static', filename='images/default-avatar.png') }}"
+            alt="Profile Picture"
+            class="avatar"
+            id="profileAvatar"
+          />
+          <div
+            class="avatar-edit"
+            data-bs-toggle="modal"
+            data-bs-target="#avatarModal"
+          >
+            <i class="fas fa-camera"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <h1 class="h2 mb-1">{{ current_user.name }}</h1>
+        <p class="mb-2 opacity-75">{{ current_user.email }}</p>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge bg-light text-dark">
+            <i class="fas fa-user-tag me-1"></i>
+            {{ current_user.role|default('User')|title }}
+          </span>
+          <span class="badge bg-light text-dark">
+            <i class="fas fa-calendar me-1"></i>
+            Joined {{ current_user.created_at.strftime('%b %Y') }}
+          </span>
+          {% if current_user.last_login %}
+          <span class="badge bg-light text-dark">
+            <i class="fas fa-clock me-1"></i>
+            Last active {{ current_user.last_login|timesince }}
+          </span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-auto">
+        <button
+          class="btn btn-light"
+          data-bs-toggle="modal"
+          data-bs-target="#editProfileModal"
+        >
+          <i class="fas fa-edit me-2"></i>Edit Profile
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card stats-card primary h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title text-muted">Total Customers</h6>
+              <h3 class="fw-bold text-primary">{{ stats.total_customers }}</h3>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-users fa-2x text-primary"></i>
+            </div>
+          </div>
+          <small class="text-muted">Across all accounts</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stats-card success h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title text-muted">Transactions</h6>
+              <h3 class="fw-bold text-success">
+                {{ stats.total_transactions }}
+              </h3>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-exchange-alt fa-2x text-success"></i>
+            </div>
+          </div>
+          <small class="text-muted">All time</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stats-card warning h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title text-muted">Total Balance</h6>
+              <h3 class="fw-bold text-warning">
+                ₹{{ "%.2f"|format(stats.total_balance) }}
+              </h3>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-wallet fa-2x text-warning"></i>
+            </div>
+          </div>
+          <small class="text-muted">Current net worth</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stats-card info h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title text-muted">Reports</h6>
+              <h3 class="fw-bold text-info">{{ stats.reports_generated }}</h3>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-chart-bar fa-2x text-info"></i>
+            </div>
+          </div>
+          <small class="text-muted">Generated this month</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Left Column - Personal Info & Security -->
+    <div class="col-lg-6">
+      <!-- Personal Information -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-user-circle me-2"></i>Personal Information
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-sm-4">
+              <strong>Full Name</strong>
+            </div>
+            <div class="col-sm-8">{{ current_user.name }}</div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-sm-4">
+              <strong>Email Address</strong>
+            </div>
+            <div class="col-sm-8">
+              {{ current_user.email }} {% if current_user.email_verified %}
+              <span class="badge bg-success ms-2">Verified</span>
+              {% else %}
+              <span class="badge bg-warning ms-2">Unverified</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-sm-4">
+              <strong>Phone Number</strong>
+            </div>
+            <div class="col-sm-8">
+              {{ current_user.phone or 'Not provided' }}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-sm-4">
+              <strong>Role</strong>
+            </div>
+            <div class="col-sm-8">
+              {{ current_user.role|default('User')|title }}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4">
+              <strong>Member Since</strong>
+            </div>
+            <div class="col-sm-8">
+              {{ current_user.created_at.strftime('%B %d, %Y') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Settings -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Security</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <button
+              class="btn btn-outline-primary text-start"
+              data-bs-toggle="modal"
+              data-bs-target="#changePasswordModal"
+            >
+              <i class="fas fa-key me-2"></i>Change Password
+            </button>
+            <button
+              class="btn btn-outline-primary text-start"
+              data-bs-toggle="modal"
+              data-bs-target="#twoFactorModal"
+            >
+              <i class="fas fa-mobile-alt me-2"></i>Two-Factor Authentication
+              <span
+                class="badge bg-{{ 'success' if current_user.two_factor_enabled else 'secondary' }} ms-2"
+              >
+                {{ 'Enabled' if current_user.two_factor_enabled else 'Disabled'
+                }}
+              </span>
+            </button>
+            <button
+              class="btn btn-outline-primary text-start"
+              data-bs-toggle="modal"
+              data-bs-target="#sessionsModal"
+            >
+              <i class="fas fa-desktop me-2"></i>Active Sessions
+              <span class="badge bg-primary ms-2">{{ sessions|length }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Activity & Notifications -->
+    <div class="col-lg-6">
+      <!-- Recent Activity -->
+      <div class="card mb-4">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0">
+            <i class="fas fa-history me-2"></i>Recent Activity
+          </h5>
+          <button
+            class="btn btn-sm btn-outline-primary"
+            onclick="loadMoreActivity()"
+          >
+            Load More
+          </button>
+        </div>
+        <div class="card-body">
+          {% if recent_activity %}
+          <div class="activity-feed">
+            {% for activity in recent_activity %}
+            <div
+              class="activity-item {{ 'recent' if activity.timestamp > recent_threshold else '' }}"
+            >
+              <div class="d-flex justify-content-between">
+                <strong>{{ activity.action }}</strong>
+                <small class="text-muted"
+                  >{{ activity.timestamp|timesince }} ago</small
+                >
+              </div>
+              <p class="mb-0 text-muted small">
+                Table: {{ activity.table_name }} | Record: {{ activity.record_id
+                }}
+              </p>
+              {% if activity.ip_address %}
+              <small class="text-muted">From {{ activity.ip_address }}</small>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="fas fa-history fa-2x mb-2"></i>
+            <p>No recent activity</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Notification Preferences -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-bell me-2"></i>Notification Preferences
+          </h5>
+        </div>
+        <div class="card-body">
+          <form id="notificationForm">
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox"
+              id="emailNotifications" {{ 'checked' if
+              current_user.email_notifications else '' }}>
+              <label class="form-check-label" for="emailNotifications">
+                Email Notifications
+              </label>
+            </div>
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox"
+              id="transactionAlerts" {{ 'checked' if
+              current_user.transaction_alerts else '' }}>
+              <label class="form-check-label" for="transactionAlerts">
+                Transaction Alerts
+              </label>
+            </div>
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" id="reportDigest"
+              {{ 'checked' if current_user.report_digest else '' }}>
+              <label class="form-check-label" for="reportDigest">
+                Weekly Report Digest
+              </label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox"
+              id="securityAlerts" {{ 'checked' if current_user.security_alerts
+              else '' }}>
+              <label class="form-check-label" for="securityAlerts">
+                Security Alerts
+              </label>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Profile</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <form method="POST" action="{{ url_for('update_profile') }}">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="name" class="form-label">Full Name</label>
+            <input
+              type="text"
+              class="form-control"
+              id="name"
+              name="name"
+              value="{{ current_user.name }}"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email Address</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              name="email"
+              value="{{ current_user.email }}"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input
+              type="tel"
+              class="form-control"
+              id="phone"
+              name="phone"
+              value="{{ current_user.phone or '' }}"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="company" class="form-label">Company</label>
+            <input
+              type="text"
+              class="form-control"
+              id="company"
+              name="company"
+              value="{{ current_user.company or '' }}"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Change Password</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <form method="POST" action="{{ url_for('change_password') }}">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label"
+              >Current Password</label
+            >
+            <input
+              type="password"
+              class="form-control"
+              id="currentPassword"
+              name="current_password"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="newPassword" class="form-label">New Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="newPassword"
+              name="new_password"
+              required
+            />
+            <div class="password-strength" id="passwordStrength"></div>
+            <small class="form-text text-muted"
+              >Use 8+ characters with mix of letters, numbers & symbols</small
+            >
+          </div>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label"
+              >Confirm New Password</label
+            >
+            <input
+              type="password"
+              class="form-control"
+              id="confirmPassword"
+              name="confirm_password"
+              required
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Two-Factor Authentication Modal -->
+<div class="modal fade" id="twoFactorModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Two-Factor Authentication</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        {% if current_user.two_factor_enabled %}
+        <div class="alert alert-success">
+          <i class="fas fa-check-circle me-2"></i>
+          Two-factor authentication is enabled for your account.
+        </div>
+        <p>
+          You'll be required to enter a verification code from your
+          authenticator app when signing in.
+        </p>
+        <form method="POST" action="{{ url_for('disable_2fa') }}">
+          <button type="submit" class="btn btn-warning">Disable 2FA</button>
+        </form>
+        {% else %}
+        <p>
+          Add an extra layer of security to your account by enabling two-factor
+          authentication.
+        </p>
+        <ol>
+          <li>
+            Install an authenticator app like Google Authenticator or Authy
+          </li>
+          <li>Scan the QR code with your app</li>
+          <li>Enter the 6-digit code to verify</li>
+        </ol>
+        <form method="POST" action="{{ url_for('enable_2fa') }}">
+          <div class="mb-3">
+            <label for="verificationCode" class="form-label"
+              >Verification Code</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="verificationCode"
+              name="verification_code"
+              placeholder="Enter 6-digit code"
+              maxlength="6"
+              pattern="[0-9]{6}"
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Enable 2FA</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Active Sessions Modal -->
+<div class="modal fade" id="sessionsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Active Sessions</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        {% if sessions %}
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Device & Browser</th>
+                <th>Location</th>
+                <th>Last Active</th>
+                <th>IP Address</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for session in sessions %}
+              <tr>
+                <td>
+                  <i
+                    class="fas {{ 'fa-desktop' if session.device_type == 'desktop' else 'fa-mobile-alt' }} me-2"
+                  ></i>
+                  {{ session.browser or 'Unknown' }} on {{
+                  session.device_type|title if session.device_type else
+                  'Unknown' }}
+                </td>
+                <td>{{ session.location or 'Unknown' }}</td>
+                <td>{{ session.last_activity|timesince }} ago</td>
+                <td>{{ session.ip_address or 'Unknown' }}</td>
+                <td>
+                  {% if not session.logged_out_at %}
+                  <button
+                    class="btn btn-sm btn-outline-danger"
+                    onclick="revokeSession('{{ session.id }}')"
+                  >
+                    Revoke
+                  </button>
+                  {% else %}
+                  <span class="badge bg-secondary">Logged out</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+          <i class="fas fa-desktop fa-2x mb-2"></i>
+          <p>No active sessions found</p>
+        </div>
+        {% endif %}
+      </div>
+      <div class="modal-footer">
+        <form method="POST" action="{{ url_for('revoke_all_sessions') }}">
+          <button type="submit" class="btn btn-warning">
+            Revoke All Other Sessions
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Avatar Upload Modal -->
+<div class="modal fade" id="avatarModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Update Profile Picture</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="avatarForm" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="avatarFile" class="form-label">Choose Image</label>
+            <input
+              class="form-control"
+              type="file"
+              id="avatarFile"
+              name="avatar"
+              accept="image/*"
+            />
+            <div class="form-text">
+              Supported formats: JPG, PNG, GIF. Max size: 2MB
+            </div>
+          </div>
+          <div class="text-center">
+            <div id="avatarPreview" class="mb-3" style="display: none">
+              <img
+                id="previewImage"
+                class="rounded-circle"
+                style="width: 150px; height: 150px; object-fit: cover"
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" onclick="uploadAvatar()">
+          Upload
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  // Password strength indicator
+  document
+    .getElementById("newPassword")
+    ?.addEventListener("input", function (e) {
+      const password = e.target.value;
+      const strengthBar = document.getElementById("passwordStrength");
+      let strength = 0;
+
+      if (password.length >= 8) strength++;
+      if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+      if (password.match(/\d/)) strength++;
+      if (password.match(/[^a-zA-Z\d]/)) strength++;
+
+      strengthBar.className = "password-strength ";
+      if (password.length === 0) {
+        strengthBar.className = "password-strength";
+      } else if (strength < 2) {
+        strengthBar.className += "password-weak";
+      } else if (strength < 3) {
+        strengthBar.className += "password-fair";
+      } else if (strength < 4) {
+        strengthBar.className += "password-good";
+      } else {
+        strengthBar.className += "password-strong";
+      }
+    });
+
+  // Notification preferences auto-save
+  document
+    .querySelectorAll('#notificationForm input[type="checkbox"]')
+    .forEach((checkbox) => {
+      checkbox.addEventListener("change", function () {
+        // Auto-save notification preferences
+        const formData = new FormData();
+        formData.append(this.id, this.checked);
+
+        fetch('{{ url_for("update_notifications") }}', {
+          method: "POST",
+          body: formData,
+        }).then((response) => {
+          if (response.ok) {
+            showToast("Notification preferences updated", "success");
+          }
+        });
+      });
+    });
+
+  // Avatar preview
+  document
+    .getElementById("avatarFile")
+    ?.addEventListener("change", function (e) {
+      const file = e.target.files[0];
+      const preview = document.getElementById("avatarPreview");
+      const previewImage = document.getElementById("previewImage");
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          previewImage.src = e.target.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.style.display = "none";
+      }
+    });
+
+  function uploadAvatar() {
+    const fileInput = document.getElementById("avatarFile");
+    const file = fileInput.files[0];
+
+    if (!file) {
+      showToast("Please select an image file", "warning");
+      return;
+    }
+
+    // Validate file size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      showToast("File size must be less than 2MB", "warning");
+      return;
+    }
+
+    // Validate file type
+    const validTypes = ["image/jpeg", "image/png", "image/gif"];
+    if (!validTypes.includes(file.type)) {
+      showToast("Please select a valid image file (JPG, PNG, GIF)", "warning");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    fetch("{{ url_for('update_avatar') }}", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          document.getElementById("profileAvatar").src = data.avatar_url;
+          document
+            .getElementById("avatarModal")
+            .querySelector(".btn-close")
+            .click();
+          showToast("Profile picture updated successfully", "success");
+        } else {
+          showToast(data.message || "Failed to upload avatar", "danger");
+        }
+      })
+      .catch((error) => {
+        console.error("Error uploading avatar:", error);
+        showToast("Failed to upload avatar", "danger");
+      });
+  }
+
+  function revokeSession(sessionId) {
+    if (confirm("Are you sure you want to revoke this session?")) {
+      fetch(`/sessions/${sessionId}/revoke`, {
+        method: "POST",
+      }).then((response) => {
+        if (response.ok) {
+          location.reload();
+        }
+      });
+    }
+  }
+
+  function loadMoreActivity() {
+    // Implement AJAX loading of more activity items
+    showToast("Loading more activity...", "info");
+    // You can implement AJAX call here to load more activity items
+  }
+
+  function showToast(message, type = "info") {
+    // Simple toast notification implementation
+    const toast = document.createElement("div");
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    toast.style.cssText =
+      "top: 20px; right: 20px; z-index: 1060; min-width: 300px;";
+    toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.remove();
+    }, 5000);
+  }
+
+  // Initialize tooltips
+  document.addEventListener("DOMContentLoaded", function () {
+    var tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  });
+</script>
+{% endblock %}

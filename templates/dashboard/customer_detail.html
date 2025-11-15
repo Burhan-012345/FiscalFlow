@@ -1,0 +1,310 @@
+{% extends "base.html" %} {% block title %}{{ customer.name }} - FiscalFlow{%
+endblock %} {% block extra_css %}
+<style>
+  .balance-positive {
+    color: var(--success);
+  }
+  .balance-negative {
+    color: var(--danger);
+  }
+  .transaction-list .list-group-item:hover {
+    background-color: var(--light-blue);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container-fluid py-4">
+  <!-- Customer Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h1 class="h2 fw-bold">{{ customer.name }}</h1>
+          <div class="d-flex gap-3 text-muted">
+            {% if customer.email %}
+            <span
+              ><i class="fas fa-envelope me-1"></i>{{ customer.email }}</span
+            >
+            {% endif %} {% if customer.phone %}
+            <span><i class="fas fa-phone me-1"></i>{{ customer.phone }}</span>
+            {% endif %} {% if customer.category %}
+            <span><i class="fas fa-tag me-1"></i>{{ customer.category }}</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <a
+            href="{{ url_for('edit_customer', customer_id=customer.id) }}"
+            class="btn btn-outline-primary"
+          >
+            <i class="fas fa-edit me-2"></i>Edit
+          </a>
+          <a
+            href="{{ url_for('generate_pdf_report', customer_id=customer.id) }}"
+            class="btn btn-outline-primary"
+          >
+            <i class="fas fa-file-pdf me-2"></i>PDF Report
+          </a>
+          <a
+            href="{{ url_for('generate_excel_report', customer_id=customer.id) }}"
+            class="btn btn-outline-primary"
+          >
+            <i class="fas fa-file-excel me-2"></i>Excel Report
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Stats -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3
+            class="fw-bold {% if customer.current_balance >= 0 %}balance-positive{% else %}balance-negative{% endif %}"
+          >
+            ₹{{ "%.2f"|format(customer.current_balance) }}
+          </h3>
+          <p class="text-muted mb-0">Current Balance</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3 class="fw-bold text-primary">{{ transactions|length }}</h3>
+          <p class="text-muted mb-0">Total Transactions</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3 class="fw-bold text-info">
+            ₹{{ "%.2f"|format(customer.credit_limit) }}
+          </h3>
+          <p class="text-muted mb-0">Credit Limit</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3 class="fw-bold text-warning">
+            {{ customer.created_at.strftime('%b %d, %Y') }}
+          </h3>
+          <p class="text-muted mb-0">Since</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Transactions Column -->
+    <div class="col-lg-8">
+      <div class="card">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0">
+            <i class="fas fa-exchange-alt me-2"></i>Transaction History
+          </h5>
+          <a
+            href="{{ url_for('add_transaction', customer_id=customer.id) }}"
+            class="btn btn-primary btn-sm"
+          >
+            <i class="fas fa-plus me-2"></i>Add Transaction
+          </a>
+        </div>
+        <div class="card-body p-0">
+          {% if transactions %}
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Category</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                  <td>{{ transaction.date.strftime('%Y-%m-%d') }}</td>
+                  <td>
+                    <span
+                      class="badge {% if transaction.type == 'cash_in' %}badge-cash-in{% else %}badge-cash-out{% endif %}"
+                    >
+                      {{ transaction.type.replace('_', ' ').title() }}
+                    </span>
+                  </td>
+                  <td
+                    class="fw-bold {% if transaction.type == 'cash_in' %}text-success{% else %}text-danger{% endif %}"
+                  >
+                    {% if transaction.type == 'cash_in' %}+{% else %}-{% endif
+                    %}₹{{ "%.2f"|format(transaction.amount) }}
+                  </td>
+                  <td>{{ transaction.category or '-' }}</td>
+                  <td>
+                    {% if transaction.notes %}
+                    <span
+                      data-bs-toggle="tooltip"
+                      title="{{ transaction.notes }}"
+                    >
+                      <i class="fas fa-sticky-note text-muted"></i>
+                    </span>
+                    {% else %} - {% endif %}
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <a
+                        href="#"
+                        class="btn btn-outline-primary"
+                        data-bs-toggle="tooltip"
+                        title="Edit"
+                      >
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a
+                        href="#"
+                        class="btn btn-outline-danger"
+                        data-bs-toggle="tooltip"
+                        title="Delete"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-exchange-alt fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No Transactions Yet</h5>
+            <p class="text-muted">Start by adding your first transaction</p>
+            <a
+              href="{{ url_for('add_transaction', customer_id=customer.id) }}"
+              class="btn btn-primary"
+            >
+              <i class="fas fa-plus me-2"></i>Add Transaction
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Details & Quick Actions -->
+    <div class="col-lg-4">
+      <!-- Customer Information -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="fas fa-info-circle me-2"></i>Customer Details
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <small class="text-muted">Email</small>
+            <p class="mb-1">{{ customer.email or 'Not provided' }}</p>
+          </div>
+          <div class="mb-3">
+            <small class="text-muted">Phone</small>
+            <p class="mb-1">{{ customer.phone or 'Not provided' }}</p>
+          </div>
+          <div class="mb-3">
+            <small class="text-muted">Category</small>
+            <p class="mb-1">{{ customer.category or 'Not categorized' }}</p>
+          </div>
+          <div class="mb-3">
+            <small class="text-muted">Credit Limit</small>
+            <p class="mb-1">₹{{ "%.2f"|format(customer.credit_limit) }}</p>
+          </div>
+          <div>
+            <small class="text-muted">Member Since</small>
+            <p class="mb-0">{{ customer.created_at.strftime('%B %d, %Y') }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-header">
+          <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <a
+              href="{{ url_for('add_transaction', customer_id=customer.id) }}"
+              class="btn btn-outline-primary text-start"
+            >
+              <i class="fas fa-plus me-2"></i>Add Transaction
+            </a>
+            <a
+              href="{{ url_for('edit_customer', customer_id=customer.id) }}"
+              class="btn btn-outline-primary text-start"
+            >
+              <i class="fas fa-edit me-2"></i>Edit Profile
+            </a>
+            <button
+              class="btn btn-outline-danger text-start"
+              data-bs-toggle="modal"
+              data-bs-target="#deleteModal"
+            >
+              <i class="fas fa-trash me-2"></i>Delete Customer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          Are you sure you want to delete <strong>{{ customer.name }}</strong>?
+        </p>
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-circle me-2"></i>
+          <strong>Warning:</strong> This action cannot be undone. All
+          transaction history for this customer will be permanently deleted.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <form
+          method="POST"
+          action="{{ url_for('delete_customer', customer_id=customer.id) }}"
+          style="display: inline"
+        >
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash me-2"></i>Delete Customer
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

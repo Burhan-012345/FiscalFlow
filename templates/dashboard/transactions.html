@@ -1,0 +1,164 @@
+{% extends "base.html" %} {% block title %}Add Transaction - FiscalFlow{%
+endblock %} {% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Add Transaction</h2>
+        <a
+          href="{{ url_for('customer_detail', customer_id=customer.id) }}"
+          class="btn btn-outline-primary"
+        >
+          <i class="fas fa-arrow-left me-2"></i>Back to Customer
+        </a>
+      </div>
+
+      <div class="card fade-in">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-exchange-alt me-2"></i>
+            New Transaction for {{ customer.name }}
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <form
+            method="POST"
+            action="{{ url_for('add_transaction', customer_id=customer.id) }}"
+            enctype="multipart/form-data"
+          >
+            {{ form.hidden_tag() }}
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="type" class="form-label"
+                    >Transaction Type *</label
+                  >
+                  {{ form.type(class="form-select", id="type", required=true) }}
+                  {% if form.type.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.type.errors %} {{ error }} {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="amount" class="form-label">Amount *</label>
+                  {{ form.amount(class="form-control", id="amount",
+                  placeholder="0.00", step="0.01", required=true) }} {% if
+                  form.amount.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.amount.errors %} {{ error }} {% endfor
+                    %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="date" class="form-label">Date *</label>
+                  {{ form.date(class="form-control", id="date", type="date",
+                  required=true) }} {% if form.date.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.date.errors %} {{ error }} {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="category" class="form-label">Category</label>
+                  {{ form.category(class="form-control", id="category",
+                  placeholder="e.g., Sales, Purchase, Refund") }}
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="notes" class="form-label">Notes</label>
+              {{ form.notes(class="form-control", id="notes",
+              placeholder="Additional notes about this transaction", rows="3")
+              }}
+            </div>
+
+            <div class="mb-4">
+              <label for="attachment" class="form-label">Attachment</label>
+              {{ form.attachment(class="form-control", id="attachment",
+              accept=".pdf,.jpg,.jpeg,.png") }}
+              <div class="form-text">
+                Upload receipt or invoice (PDF, JPG, PNG up to 16MB)
+              </div>
+            </div>
+
+            <!-- Current Balance Preview -->
+            <div class="alert alert-info">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Current Balance:</strong>
+                  <span
+                    class="{% if customer.current_balance >= 0 %}text-success{% else %}text-danger{% endif %}"
+                  >
+                    ₹{{ "%.2f"|format(customer.current_balance) }}
+                  </span>
+                </div>
+                <div id="balancePreview" class="fw-bold">
+                  <!-- Will be updated by JavaScript -->
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex gap-3">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save me-2"></i>Save Transaction
+              </button>
+              <a
+                href="{{ url_for('customer_detail', customer_id=customer.id) }}"
+                class="btn btn-outline-secondary btn-lg"
+              >
+                Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const typeSelect = document.getElementById('type');
+      const amountInput = document.getElementById('amount');
+      const balancePreview = document.getElementById('balancePreview');
+      const currentBalance = {{ customer.current_balance }};
+
+      function updateBalancePreview() {
+          const amount = parseFloat(amountInput.value) || 0;
+          const type = typeSelect.value;
+
+          let newBalance = currentBalance;
+          if (type === 'cash_in') {
+              newBalance += amount;
+          } else if (type === 'cash_out') {
+              newBalance -= amount;
+          }
+
+          const balanceClass = newBalance >= 0 ? 'text-success' : 'text-danger';
+          balancePreview.innerHTML = `
+              <strong>New Balance:</strong>
+              <span class="${balanceClass}">₹${newBalance.toFixed(2)}</span>
+          `;
+      }
+
+      typeSelect.addEventListener('change', updateBalancePreview);
+      amountInput.addEventListener('input', updateBalancePreview);
+
+      // Initialize balance preview
+      updateBalancePreview();
+  });
+</script>
+{% endblock %}
