@@ -1,0 +1,30 @@
+{% extends "email/base_email.html" %} {% block header %}Balance Update{%
+endblock %} {% block content %}
+<h2>Account Balance Update</h2>
+<p>Hello {{ customer_name }},</p>
+<p>This is a notification of your current account balance with FiscalFlow:</p>
+
+<div
+  style="
+    text-align: center;
+    margin: 30px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  "
+>
+  <div
+    class="transaction-amount {% if balance >= 0 %}cash-in{% else %}cash-out{% endif %}"
+  >
+    ${{ "%.2f"|format(balance) }}
+  </div>
+  <div style="color: #6c757d">Current Balance</div>
+</div>
+
+<p>
+  If you have any questions about your balance or recent transactions, please
+  don't hesitate to contact us.
+</p>
+
+<p>Best regards,<br />The FiscalFlow Team</p>
+{% endblock %}
