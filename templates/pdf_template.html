@@ -242,12 +242,6 @@
           ₹{{ "%.2f"|format(customer.current_balance) }}
         </span>
       </p>
-      {% if customer.credit_limit > 0 %}
-      <p>
-        <strong>Credit Limit:</strong> ₹{{ "%.2f"|format(customer.credit_limit)
-        }}
-      </p>
-      {% endif %}
     </div>
 
     <div class="section-title">TRANSACTION HISTORY</div>
