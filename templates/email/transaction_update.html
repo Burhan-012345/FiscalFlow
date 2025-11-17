@@ -1,0 +1,36 @@
+{% extends "email/base_email.html" %} {% block header %}Transaction Update{%
+endblock %} {% block content %}
+<h2>Transaction Notification</h2>
+<p>Hello {{ customer_name }},</p>
+<p>A new transaction has been recorded in your account:</p>
+
+<div
+  style="
+    text-align: center;
+    margin: 30px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  "
+>
+  <div
+    class="transaction-amount {% if transaction_type == 'cash_in' %}cash-in{% else %}cash-out{% endif %}"
+  >
+    {% if transaction_type == 'cash_in' %}+{% else %}-{% endif %} ${{
+    "%.2f"|format(amount) }}
+  </div>
+  <div style="color: #6c757d; text-transform: capitalize">
+    {{ transaction_type.replace('_', ' ') }}
+  </div>
+</div>
+
+<div
+  style="background: #e6f0ff; padding: 15px; border-radius: 6px; margin: 20px 0"
+>
+  <strong>Current Balance: ${{ "%.2f"|format(balance) }}</strong>
+</div>
+
+<p>If you have any questions about this transaction, please contact us.</p>
+
+<p>Best regards,<br />The FiscalFlow Team</p>
+{% endblock %}

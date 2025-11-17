@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}FiscalFlow{% endblock %}</title>
+    <style>
+      :root {
+        --primary-blue: #0066ff;
+        --primary-white: #ffffff;
+        --light-blue: #e6f0ff;
+        --gray-light: #f8f9fa;
+        --gray-medium: #6c757d;
+        --gray-dark: #343a40;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: var(--gray-dark);
+        background-color: var(--gray-light);
+      }
+
+      .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: var(--primary-white);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .email-header {
+        background: var(--primary-blue);
+        color: var(--primary-white);
+        padding: 30px;
+        text-align: center;
+      }
+
+      .email-body {
+        padding: 40px;
+      }
+
+      .email-footer {
+        background: var(--gray-light);
+        padding: 20px;
+        text-align: center;
+        color: var(--gray-medium);
+        font-size: 14px;
+      }
+
+      .btn-primary {
+        background: var(--primary-blue);
+        color: var(--primary-white);
+        text-decoration: none;
+        padding: 12px 30px;
+        border-radius: 6px;
+        display: inline-block;
+        margin: 20px 0;
+        font-weight: 600;
+      }
+
+      .transaction-amount {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+
+      .cash-in {
+        color: #28a745;
+      }
+      .cash-out {
+        color: #dc3545;
+      }
+
+      @media (max-width: 600px) {
+        .email-body {
+          padding: 20px;
+        }
+
+        .email-header {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="email-header">
+        <!-- Use absolute URL for logo in emails -->
+        <img
+          src="{{ app_url }}/static/img/logo.svg"
+          alt="FiscalFlow"
+          class="email-logo"
+          style="height: 40px; margin-bottom: 15px"
+        />
+        <h1 style="margin: 0; font-size: 24px">
+          {% block header %}FiscalFlow{% endblock %}
+        </h1>
+        <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px">
+          {% if app_url %} {{ app_url.replace('https://', '').replace('http://',
+          '') }} {% endif %}
+        </p>
+      </div>
+
+      <div class="email-body">{% block content %}{% endblock %}</div>
+
+      <div class="email-footer">
+        <p>&copy; 2024 FiscalFlow. All rights reserved.</p>
+        <p>
+          <a
+            href="{{ app_url }}"
+            style="color: var(--primary-blue); text-decoration: none"
+            >Visit Website</a
+          >
+          |
+          <a
+            href="{{ app_url }}/privacy"
+            style="color: var(--primary-blue); text-decoration: none"
+            >Privacy Policy</a
+          >
+          |
+          <a
+            href="{{ app_url }}/unsubscribe"
+            style="color: var(--primary-blue); text-decoration: none"
+            >Unsubscribe</a
+          >
+        </p>
+        <p style="font-size: 12px; margin-top: 10px">
+          This email was sent to you as part of your FiscalFlow account. Please
+          do not reply to this email.
+        </p>
+        {% if app_url and 'localhost' in app_url %}
+        <p
+          style="
+            font-size: 12px;
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+          "
+        >
+          <strong>Development Environment:</strong> This email was sent from a
+          development instance.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+</html>
