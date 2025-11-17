@@ -1,0 +1,21 @@
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#0066FF"/>
+            <stop offset="100%" stop-color="#0047CC"/>
+        </linearGradient>
+    </defs>
+    
+    <!-- F Icon -->
+    <rect x="10" y="10" width="12" height="40" rx="2" fill="url(#blueGradient)"/>
+    <rect x="10" y="10" width="30" height="12" rx="2" fill="url(#blueGradient)"/>
+    <rect x="10" y="24" width="20" height="8" rx="2" fill="url(#blueGradient)"/>
+    
+    <!-- Flow Lines -->
+    <path d="M50 20 C70 15, 90 25, 110 20" stroke="url(#blueGradient)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M50 30 C70 25, 90 35, 110 30" stroke="url(#blueGradient)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M50 40 C70 35, 90 45, 110 40" stroke="url(#blueGradient)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    
+    <!-- FiscalFlow Text -->
+    <text x="130" y="35" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#0066FF">FiscalFlow</text>
+</svg>
