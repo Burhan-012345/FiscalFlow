@@ -872,8 +872,6 @@ class ReportUtils:
             </div>
             """
 
-        credit_limit_html = f"<p><strong>Credit Limit:</strong> ₹{customer.credit_limit:.2f}</p>" if customer.credit_limit and customer.credit_limit > 0 else ""
-
         return f"""
         <!DOCTYPE html>
         <html>
@@ -1113,7 +1111,6 @@ class ReportUtils:
                   ₹{customer.current_balance:.2f}
                 </span>
               </p>
-              {credit_limit_html}
             </div>
 
             <div class="section-title">TRANSACTION HISTORY</div>
