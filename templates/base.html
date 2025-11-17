@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% block title %}FiscalFlow - Smart Financial Management{% endblock %}
+    </title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Custom CSS -->
+    <link
+      href="{{ url_for('static', filename='css/style.css') }}"
+      rel="stylesheet"
+    />
+
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+          <img
+            src="{{ url_for('static', filename='img/logo.svg') }}"
+            alt="FiscalFlow Logo"
+            id="navbarLogo"
+          />
+          FiscalFlow
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          {% if current_user.is_authenticated %}
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="fas fa-users me-1"></i> Customers
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('dashboard') }}#customerTable"
+                  >
+                    <i class="fas fa-list me-2"></i>View All
+                  </a>
+                </li>
+                {% if accounts %}
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('add_customer', account_id=accounts[0].id) }}"
+                  >
+                    <i class="fas fa-plus me-2"></i>Add New
+                  </a>
+                </li>
+                {% else %}
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('add_account') }}">
+                    <i class="fas fa-plus me-2"></i>Add Account First
+                  </a>
+                </li>
+                {% endif %}
+              </ul>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('reports') }}">
+                <i class="fas fa-chart-bar me-1"></i> Reports
+              </a>
+            </li>
+          </ul>
+          {% endif %}
+
+          <ul class="navbar-nav ms-auto">
+            {% if current_user.is_authenticated %}
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="fas fa-user-circle me-1"></i> {{ current_user.name }}
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('profile') }}">
+                    <i class="fas fa-user me-2"></i> Profile
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('settings') }}">
+                    <i class="fas fa-cog me-2"></i> Settings
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                  </a>
+                </li>
+              </ul>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-primary" href="{{ url_for('register_step1') }}"
+                >Get Started</a
+              >
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show">
+        {{ message }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main>{% block content %}{% endblock %}</main>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen" style="display: none">
+      <div class="loading-content">
+        <img
+          src="{{ url_for('static', filename='img/logo.svg') }}"
+          alt="FiscalFlow"
+          class="loading-logo"
+        />
+        <div class="loading-text">Loading FiscalFlow...</div>
+      </div>
+    </div>
+
+    <!-- Startup Modal -->
+    <div class="modal fade" id="startupModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <img
+                src="{{ url_for('static', filename='img/logo.svg') }}"
+                alt="FiscalFlow"
+                height="30"
+              />
+              Welcome to FiscalFlow
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-6">
+                <h6>Smart Financial Management</h6>
+                <p>
+                  FiscalFlow helps you manage your business finances efficiently
+                  with powerful features:
+                </p>
+                <ul>
+                  <li>Customer Management</li>
+                  <li>Transaction Tracking</li>
+                  <li>Real-time Analytics</li>
+                  <li>PDF & Excel Reports</li>
+                  <li>Multi-user Collaboration</li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <h6>Get Started</h6>
+                <p>
+                  Create your account and start managing your finances in
+                  minutes.
+                </p>
+                <div class="d-grid gap-2">
+                  <a
+                    href="{{ url_for('register_step1') }}"
+                    class="btn btn-primary"
+                  >
+                    Create Account
+                  </a>
+                  <a
+                    href="{{ url_for('login') }}"
+                    class="btn btn-outline-primary"
+                  >
+                    Sign In
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden admin access for authorized users -->
+    {% if current_user.is_authenticated and current_user.role in ['owner',
+    'admin'] %}
+    <div
+      style="
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        opacity: 0.1;
+        transition: opacity 0.3s;
+      "
+      onmouseover="this.style.opacity='1'"
+      onmouseout="this.style.opacity='0.1'"
+      id="hiddenAdminAccess"
+    >
+      <a
+        href="{{ url_for('secret_admin') }}"
+        class="btn btn-sm btn-outline-secondary"
+        data-bs-toggle="tooltip"
+        title="Secret Admin Access"
+      >
+        <i class="fas fa-user-secret"></i>
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- In your base.html, update the script section -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+<!-- Load admin-secret.js only for authenticated users -->
+{% if current_user.is_authenticated %}
+<script src="{{ url_for('static', filename='js/admin-secret.js') }}"></script>
+{% endif %}
+
+{% block extra_js %}{% endblock %}
+</html>
