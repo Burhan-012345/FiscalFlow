@@ -1,0 +1,347 @@
+{% extends "admin/admin_base.html" %} {% block title %}Admin Dashboard -
+FiscalFlow{% endblock %} {% block page_title %}Admin Dashboard{% endblock %} {%
+block page_subtitle %}Overview of your FiscalFlow application{% endblock %} {%
+block admin_content %}
+<!-- Quick Stats -->
+<div class="row mb-4">
+  <div class="col-xl-3 col-md-6">
+    <div class="card stat-card bg-primary text-white mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h6 class="card-title text-white-50">Total Users</h6>
+            <h2 class="fw-bold">{{ stats.total_users }}</h2>
+          </div>
+          <div class="align-self-center">
+            <i class="fas fa-users fa-2x text-white-50"></i>
+          </div>
+        </div>
+        <small class="text-white-50">
+          <i class="fas fa-arrow-up me-1"></i>{{ stats.user_growth }}% this
+          month
+        </small>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="card stat-card bg-success text-white mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h6 class="card-title text-white-50">Total Customers</h6>
+            <h2 class="fw-bold">{{ stats.total_customers }}</h2>
+          </div>
+          <div class="align-self-center">
+            <i class="fas fa-user-tie fa-2x text-white-50"></i>
+          </div>
+        </div>
+        <small class="text-white-50">
+          <i class="fas fa-arrow-up me-1"></i>{{ stats.customer_growth }}% this
+          month
+        </small>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="card stat-card bg-info text-white mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h6 class="card-title text-white-50">Total Transactions</h6>
+            <h2 class="fw-bold">{{ stats.total_transactions }}</h2>
+          </div>
+          <div class="align-self-center">
+            <i class="fas fa-exchange-alt fa-2x text-white-50"></i>
+          </div>
+        </div>
+        <small class="text-white-50">
+          ${{ "%.2f"|format(stats.total_volume) }} total volume
+        </small>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="card stat-card bg-warning text-white mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h6 class="card-title text-white-50">System Health</h6>
+            <h2 class="fw-bold">{{ stats.health_score }}%</h2>
+          </div>
+          <div class="align-self-center">
+            <i class="fas fa-heartbeat fa-2x text-white-50"></i>
+          </div>
+        </div>
+        <small class="text-white-50"> {{ stats.uptime }}% uptime </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Recent Activity -->
+  <div class="col-lg-8">
+    <div class="card mb-4">
+      <div
+        class="card-header d-flex justify-content-between align-items-center"
+      >
+        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Activity</h5>
+        <a href="/admin/auditlog/" class="btn btn-sm btn-outline-primary"
+          >View All</a
+        >
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Action</th>
+                <th>Details</th>
+                <th>IP Address</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for activity in recent_activities %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-user-circle text-muted me-2"></i>
+                    {{ activity.user_name }}
+                  </div>
+                </td>
+                <td>
+                  <span class="badge bg-{{ activity.badge_color }}"
+                    >{{ activity.action }}</span
+                  >
+                </td>
+                <td class="small">{{ activity.details }}</td>
+                <td class="small text-muted">{{ activity.ip_address }}</td>
+                <td class="small text-muted">{{ activity.timestamp }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                  <i class="fas fa-history fa-2x mb-3"></i>
+                  <p>No recent activity</p>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Metrics -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-chart-line me-2"></i>System Performance
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-md-3">
+            <div class="mb-3">
+              <h3 class="text-primary fw-bold">
+                {{ stats.avg_response_time }}ms
+              </h3>
+              <small class="text-muted">Avg Response Time</small>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="mb-3">
+              <h3 class="text-success fw-bold">{{ stats.success_rate }}%</h3>
+              <small class="text-muted">Success Rate</small>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="mb-3">
+              <h3 class="text-info fw-bold">{{ stats.active_sessions }}</h3>
+              <small class="text-muted">Active Sessions</small>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="mb-3">
+              <h3 class="text-warning fw-bold">{{ stats.error_count }}</h3>
+              <small class="text-muted">Errors (24h)</small>
+            </div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="performanceChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions & System Info -->
+  <div class="col-lg-4">
+    <!-- Quick Actions -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <a href="/admin/user/new/" class="btn btn-outline-primary text-start">
+            <i class="fas fa-user-plus me-2"></i>Add New User
+          </a>
+          <a
+            href="/admin/customer/new/"
+            class="btn btn-outline-primary text-start"
+          >
+            <i class="fas fa-user-tie me-2"></i>Add Customer
+          </a>
+          <button class="btn btn-outline-primary text-start">
+            <i class="fas fa-cog me-2"></i>System Settings
+          </button>
+          <button class="btn btn-outline-primary text-start">
+            <i class="fas fa-database me-2"></i>Backup Database
+          </button>
+          <button class="btn btn-outline-primary text-start">
+            <i class="fas fa-envelope me-2"></i>Send Announcement
+          </button>
+          <button class="btn btn-outline-danger text-start">
+            <i class="fas fa-trash me-2"></i>Clear Cache
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Information -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-info-circle me-2"></i>System Information
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <small class="text-muted">Server Status</small>
+          <div class="d-flex justify-content-between">
+            <span>Web Server</span>
+            <span class="badge bg-success">Running</span>
+          </div>
+        </div>
+        <div class="mb-3">
+          <small class="text-muted">Database</small>
+          <div class="d-flex justify-content-between">
+            <span>SQLite</span>
+            <span class="badge bg-success">Connected</span>
+          </div>
+        </div>
+        <div class="mb-3">
+          <small class="text-muted">Email Service</small>
+          <div class="d-flex justify-content-between">
+            <span>SMTP</span>
+            <span
+              class="badge bg-{{ 'success' if stats.email_status else 'warning' }}"
+            >
+              {{ 'Connected' if stats.email_status else 'Testing' }}
+            </span>
+          </div>
+        </div>
+        <div class="mb-3">
+          <small class="text-muted">Storage</small>
+          <div class="d-flex justify-content-between">
+            <span>Disk Usage</span>
+            <span>{{ stats.disk_usage }}%</span>
+          </div>
+        </div>
+        <div class="mb-3">
+          <small class="text-muted">Memory</small>
+          <div class="d-flex justify-content-between">
+            <span>Usage</span>
+            <span>{{ stats.memory_usage }}%</span>
+          </div>
+        </div>
+        <div>
+          <small class="text-muted">Last Backup</small>
+          <div class="d-flex justify-content-between">
+            <span>Database</span>
+            <span class="text-muted">{{ stats.last_backup }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Users -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-user-clock me-2"></i>Recent Registrations
+        </h5>
+      </div>
+      <div class="card-body">
+        {% for user in recent_users %}
+        <div class="d-flex align-items-center mb-3">
+          <div class="flex-shrink-0">
+            <i class="fas fa-user-circle text-muted fa-lg"></i>
+          </div>
+          <div class="flex-grow-1 ms-3">
+            <h6 class="mb-0">{{ user.name }}</h6>
+            <small class="text-muted">{{ user.email }}</small>
+          </div>
+          <div class="flex-shrink-0">
+            <small class="text-muted">{{ user.joined }}</small>
+          </div>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-3">
+          <i class="fas fa-users fa-2x mb-2"></i>
+          <p>No recent registrations</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Performance chart
+    const ctx = document.getElementById("performanceChart").getContext("2d");
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00"],
+        datasets: [
+          {
+            label: "Response Time (ms)",
+            data: [120, 110, 95, 105, 115, 125],
+            borderColor: "#0066FF",
+            backgroundColor: "rgba(0, 102, 255, 0.1)",
+            tension: 0.4,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: false,
+            grid: {
+              color: "rgba(0, 0, 0, 0.1)",
+            },
+          },
+          x: {
+            grid: {
+              display: false,
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+      },
+    });
+  });
+</script>
+{% endblock %}
