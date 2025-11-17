@@ -1,0 +1,271 @@
+{% extends "base.html" %} {% block title %}Verify Email - FiscalFlow{% endblock
+%} {% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <!-- Registration Steps -->
+      <div class="registration-steps">
+        <div class="step completed">
+          <div class="step-number">1</div>
+          <div class="step-label">Get Started</div>
+        </div>
+        <div class="step completed">
+          <div class="step-number">2</div>
+          <div class="step-label">User Info</div>
+        </div>
+        <div class="step active">
+          <div class="step-number">3</div>
+          <div class="step-label">Verify</div>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-label">Password</div>
+        </div>
+      </div>
+
+      <div class="card fade-in">
+        <div class="card-header text-center">
+          <h4 class="mb-0">
+            <i class="fas fa-shield-alt me-2"></i>Verify Your Email
+          </h4>
+        </div>
+        <div class="card-body p-4">
+          <p class="text-muted text-center mb-4">
+            We've sent a 6-digit verification code to your email address. Please
+            enter it below to continue.
+          </p>
+
+          <form
+            method="POST"
+            action="{{ url_for('register_step3', token=token) }}"
+          >
+            {{ form.hidden_tag() }}
+
+            <div class="mb-4">
+              <label for="otp" class="form-label">Verification Code</label>
+              <div class="d-flex gap-2 justify-content-center">
+                {% for i in range(6) %}
+                <input
+                  type="text"
+                  class="form-control text-center otp-input"
+                  maxlength="1"
+                  style="height: 60px; font-size: 1.5rem"
+                  name="otp-{{ i }}"
+                  id="otp-{{ i }}"
+                />
+                {% endfor %}
+              </div>
+              {{ form.otp(id="otp", type="hidden") }} {% if form.otp.errors %}
+              <div class="invalid-feedback d-block text-center">
+                {% for error in form.otp.errors %} {{ error }} {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="d-grid mb-3">
+              <button type="submit" class="btn btn-primary btn-lg">
+                Verify Code <i class="fas fa-check-circle ms-2"></i>
+              </button>
+            </div>
+
+            <div class="text-center">
+              <p class="text-muted mb-2">Didn't receive the code?</p>
+              <button type="button" class="btn btn-link p-0" id="resendOtp">
+                <i class="fas fa-redo me-1"></i>Resend Code
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const otpInputs = document.querySelectorAll(".otp-input");
+    const hiddenOtp = document.getElementById("otp");
+
+    // Auto-focus first input
+    otpInputs[0].focus();
+
+    // Handle OTP input
+    otpInputs.forEach((input, index) => {
+      input.addEventListener("input", function () {
+        if (this.value.length === 1 && index < otpInputs.length - 1) {
+          otpInputs[index + 1].focus();
+        }
+        updateHiddenOtp();
+      });
+
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Backspace" && this.value.length === 0 && index > 0) {
+          otpInputs[index - 1].focus();
+        }
+      });
+    });
+
+    function updateHiddenOtp() {
+      const otp = Array.from(otpInputs)
+        .map((input) => input.value)
+        .join("");
+      hiddenOtp.value = otp;
+    }
+
+    // Resend OTP
+    document.getElementById("resendOtp").addEventListener("click", function () {
+      this.disabled = true;
+      this.innerHTML =
+        '<i class="fas fa-spinner fa-spin me-1"></i>Resending...';
+
+      // Simulate API call - in real app, this would call your backend
+      setTimeout(() => {
+        this.disabled = false;
+        this.innerHTML = '<i class="fas fa-redo me-1"></i>Code Sent!';
+
+        setTimeout(() => {
+          this.innerHTML = '<i class="fas fa-redo me-1"></i>Resend Code';
+        }, 2000);
+      }, 2000);
+    });
+  });
+</script>
+
+<!-- register_step3.html - Style Section Only -->
+<style>
+  .registration-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  .registration-steps::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #e9ecef;
+    z-index: 1;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    border: 3px solid white;
+  }
+
+  .step.active .step-number {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+  }
+
+  .step.completed .step-number {
+    background-color: #198754;
+    color: white;
+  }
+
+  .step-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6c757d;
+  }
+
+  .step.active .step-label {
+    color: #007bff;
+    font-weight: 600;
+  }
+
+  .step.completed .step-label {
+    color: #198754;
+  }
+
+  .card {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.75rem;
+  }
+
+  .card-header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+    padding: 1.5rem;
+  }
+
+  .card-header h4 {
+    font-weight: 600;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004494 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+  }
+
+  .otp-input {
+    border: 2px solid #dee2e6;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .otp-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+
+  .btn-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .btn-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.6s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+{% endblock %}
