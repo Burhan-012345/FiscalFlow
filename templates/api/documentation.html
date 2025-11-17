@@ -1,0 +1,351 @@
+{% extends "base.html" %} {% block title %}API Documentation - FiscalFlow{%
+endblock %} {% block extra_css %}
+<style>
+  .endpoint-card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .endpoint-header {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .endpoint-method {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.875rem;
+    margin-right: 10px;
+  }
+
+  .method-get {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+  .method-post {
+    background: #e8f5e8;
+    color: #2e7d32;
+  }
+  .method-put {
+    background: #fff3e0;
+    color: #ef6c00;
+  }
+  .method-delete {
+    background: #ffebee;
+    color: #c62828;
+  }
+
+  .endpoint-url {
+    font-family: "Courier New", monospace;
+    font-size: 0.95rem;
+    color: #495057;
+  }
+
+  .endpoint-body {
+    padding: 1.5rem;
+  }
+
+  .parameter-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .parameter-table th,
+  .parameter-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .parameter-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+  }
+
+  .code-block {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 1rem;
+    font-family: "Courier New", monospace;
+    font-size: 0.875rem;
+    overflow-x: auto;
+  }
+
+  .response-example {
+    background: #f8f9fa;
+    border-left: 4px solid #1565c0;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 4px;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="h2 fw-bold">
+        <i class="fas fa-code me-2"></i>API Documentation
+      </h1>
+      <p class="text-muted mb-0">
+        FiscalFlow API for developers and integrations
+      </p>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+      <!-- Authentication Section -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-key me-2"></i>Authentication</h5>
+        </div>
+        <div class="card-body">
+          <p>
+            All API requests require authentication using your API key. Include
+            the API key in the Authorization header of your requests.
+          </p>
+
+          <div class="code-block mb-3">Authorization: Bearer YOUR_API_KEY</div>
+
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Important:</strong> Keep your API key secure. Do not share
+            it or commit it to version control.
+          </div>
+        </div>
+      </div>
+
+      <!-- API Endpoints -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-plug me-2"></i>API Endpoints</h5>
+        </div>
+        <div class="card-body p-0">
+          <!-- Dashboard Stats -->
+          <div class="endpoint-card">
+            <div class="endpoint-header">
+              <span class="endpoint-method method-get">GET</span>
+              <span class="endpoint-url">/api/dashboard/stats</span>
+            </div>
+            <div class="endpoint-body">
+              <p>
+                Get dashboard statistics including total customers, balance, and
+                monthly revenue/expenses.
+              </p>
+
+              <h6>Response Example</h6>
+              <div class="code-block">
+                { "total_customers": 15, "total_balance": 12500.75,
+                "monthly_revenue": 3500.25, "monthly_expenses": 1200.50 }
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Transactions -->
+          <div class="endpoint-card">
+            <div class="endpoint-header">
+              <span class="endpoint-method method-get">GET</span>
+              <span class="endpoint-url">/api/transactions/recent</span>
+            </div>
+            <div class="endpoint-body">
+              <p>Get the 10 most recent transactions across all customers.</p>
+
+              <h6>Response Example</h6>
+              <div class="code-block">
+                [ { "id": "transaction-uuid", "customer_name": "John Doe",
+                "type": "cash_in", "amount": 500.00, "date": "2024-01-15",
+                "category": "Payment" }, { "id": "transaction-uuid-2",
+                "customer_name": "Jane Smith", "type": "cash_out", "amount":
+                250.00, "date": "2024-01-14", "category": "Withdrawal" } ]
+              </div>
+            </div>
+          </div>
+
+          <!-- Mark Notification Read -->
+          <div class="endpoint-card">
+            <div class="endpoint-header">
+              <span class="endpoint-method method-post">POST</span>
+              <span class="endpoint-url"
+                >/api/notifications/&lt;notification_id&gt;/read</span
+              >
+            </div>
+            <div class="endpoint-body">
+              <p>Mark a specific notification as read.</p>
+
+              <h6>Parameters</h6>
+              <table class="parameter-table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>notification_id</td>
+                    <td>String</td>
+                    <td>UUID of the notification to mark as read</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <h6>Response Example</h6>
+              <div class="code-block">{ "success": true }</div>
+            </div>
+          </div>
+
+          <!-- Mark All Notifications Read -->
+          <div class="endpoint-card">
+            <div class="endpoint-header">
+              <span class="endpoint-method method-post">POST</span>
+              <span class="endpoint-url">/api/notifications/mark-all-read</span>
+            </div>
+            <div class="endpoint-body">
+              <p>Mark all unread notifications as read.</p>
+
+              <h6>Response Example</h6>
+              <div class="code-block">{ "success": true }</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Handling -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2"></i>Error Handling
+          </h5>
+        </div>
+        <div class="card-body">
+          <p>
+            The API uses standard HTTP status codes to indicate success or
+            failure:
+          </p>
+
+          <table class="parameter-table">
+            <thead>
+              <tr>
+                <th>Status Code</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>200</td>
+                <td>Success</td>
+              </tr>
+              <tr>
+                <td>400</td>
+                <td>Bad Request - Invalid parameters</td>
+              </tr>
+              <tr>
+                <td>401</td>
+                <td>Unauthorized - Invalid or missing API key</td>
+              </tr>
+              <tr>
+                <td>404</td>
+                <td>Not Found - Resource doesn't exist</td>
+              </tr>
+              <tr>
+                <td>500</td>
+                <td>Internal Server Error</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h6 class="mt-3">Error Response Example</h6>
+          <div class="code-block">
+            { "error": "Unauthorized", "message": "Invalid API key" }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Quick Start -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h6 class="mb-0"><i class="fas fa-rocket me-2"></i>Quick Start</h6>
+        </div>
+        <div class="card-body">
+          <ol class="ps-3">
+            <li class="mb-2">Generate your API key in Settings</li>
+            <li class="mb-2">Include the key in Authorization header</li>
+            <li class="mb-2">Make requests to the endpoints</li>
+            <li>Handle responses appropriately</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Rate Limiting -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="fas fa-tachometer-alt me-2"></i>Rate Limiting
+          </h6>
+        </div>
+        <div class="card-body">
+          <p>API requests are limited to:</p>
+          <ul class="mb-0">
+            <li><strong>1,000 requests per day</strong></li>
+            <li><strong>100 requests per minute</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Code Examples -->
+      <div class="card">
+        <div class="card-header">
+          <h6 class="mb-0"><i class="fas fa-code me-2"></i>Code Examples</h6>
+        </div>
+        <div class="card-body">
+          <h6>JavaScript (Fetch)</h6>
+          <div class="code-block mb-3">
+            const response = await fetch('/api/dashboard/stats', { headers: {
+            'Authorization': 'Bearer YOUR_API_KEY' } }); const data = await
+            response.json();
+          </div>
+
+          <h6>Python (Requests)</h6>
+          <div class="code-block">
+            import requests headers = { 'Authorization': 'Bearer YOUR_API_KEY' }
+            response = requests.get('/api/dashboard/stats', headers=headers)
+            data = response.json()
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  // Add any interactive functionality here if needed
+  document.addEventListener("DOMContentLoaded", function () {
+    // Example: Copy code blocks on click
+    document.querySelectorAll(".code-block").forEach((block) => {
+      block.addEventListener("click", function () {
+        const text = this.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          // Show temporary success message
+          const originalText = this.textContent;
+          this.textContent = "Copied!";
+          setTimeout(() => {
+            this.textContent = originalText;
+          }, 2000);
+        });
+      });
+    });
+  });
+</script>
+{% endblock %}
