@@ -1,0 +1,469 @@
+{% extends "base.html" %} {% block title %}{{ customer.name }} - FiscalFlow{%
+endblock %} {% block extra_css %}
+<style>
+  .balance-positive {
+    color: var(--success);
+  }
+  .balance-negative {
+    color: var(--danger);
+  }
+  .transaction-list .list-group-item:hover {
+    background-color: var(--light-blue);
+  }
+  .btn-cash-in {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+  }
+  .btn-cash-out {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+  }
+  .btn-cash-in:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+  }
+  .btn-cash-out:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+  }
+  /* Transaction amount colors */
+  .amount-cash-in {
+    color: #28a745;
+    font-weight: bold;
+  }
+  .amount-cash-out {
+    color: #dc3545;
+    font-weight: bold;
+  }
+  /* Smaller action buttons */
+  .btn-action-sm {
+    padding: 0.15rem 0.3rem;
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+  .btn-action-sm .fas {
+    font-size: 0.7rem;
+  }
+  .datetime-cell {
+    min-width: 140px;
+  }
+  .date-display {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .time-display {
+    font-size: 0.8rem;
+    color: #6c757d;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container-fluid py-4">
+  <!-- Customer Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h1 class="h2 fw-bold">{{ customer.name }}</h1>
+          <div class="d-flex gap-3 text-muted">
+            {% if customer.email %}
+            <span
+              ><i class="fas fa-envelope me-1"></i>{{ customer.email }}</span
+            >
+            {% endif %} {% if customer.phone %}
+            <span><i class="fas fa-phone me-1"></i>{{ customer.phone }}</span>
+            {% endif %} {% if customer.category %}
+            <span><i class="fas fa-tag me-1"></i>{{ customer.category }}</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <a
+            href="{{ url_for('edit_customer', customer_id=customer.id) }}"
+            class="btn btn-outline-primary"
+          >
+            <i class="fas fa-edit me-2"></i>Edit Customer
+          </a>
+          <button
+            class="btn btn-outline-danger"
+            data-bs-toggle="modal"
+            data-bs-target="#deleteCustomerModal"
+          >
+            <i class="fas fa-trash me-2"></i>Delete Customer
+          </button>
+          <a
+            href="{{ url_for('generate_pdf_report', customer_id=customer.id) }}"
+            class="btn btn-outline-primary"
+          >
+            <i class="fas fa-file-pdf me-2"></i>PDF Report
+          </a>
+          <a
+            href="{{ url_for('generate_excel_report', customer_id=customer.id) }}"
+            class="btn btn-outline-primary"
+          >
+            <i class="fas fa-file-excel me-2"></i>Excel Report
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Stats -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3
+            class="fw-bold {% if customer.current_balance >= 0 %}balance-positive{% else %}balance-negative{% endif %}"
+          >
+            ₹{{ "%.2f"|format(customer.current_balance) }}
+          </h3>
+          <p class="text-muted mb-0">Current Balance</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3 class="fw-bold text-primary">{{ transactions|length }}</h3>
+          <p class="text-muted mb-0">Total Transactions</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3 class="fw-bold text-info">
+            {{ customer.category or 'No Category' }}
+          </h3>
+          <p class="text-muted mb-0">Category</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3 class="fw-bold text-warning">
+            {{ customer.created_at.strftime('%b %d, %Y') if customer.created_at
+            else 'N/A' }}
+          </h3>
+          <p class="text-muted mb-0">Since</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Transactions Column -->
+    <div class="col-12">
+      <div class="card">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0">
+            <i class="fas fa-exchange-alt me-2"></i>Transaction History
+          </h5>
+          <div class="d-flex gap-2">
+            <a
+              href="{{ url_for('add_transaction', customer_id=customer.id) }}?type=cash_in"
+              class="btn btn-cash-in btn-sm"
+            >
+              <i class="fas fa-plus-circle me-2"></i>Cash In
+            </a>
+            <a
+              href="{{ url_for('add_transaction', customer_id=customer.id) }}?type=cash_out"
+              class="btn btn-cash-out btn-sm"
+            >
+              <i class="fas fa-minus-circle me-2"></i>Cash Out
+            </a>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          {% if transactions %}
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th class="datetime-cell">Date & Time</th>
+                  <th>Type</th>
+                  <th>Notes</th>
+                  <th>Category</th>
+                  <th>Amount</th>
+                  <th>Balance</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% set running_balance = customer.current_balance %} {% for
+                transaction in transactions %}
+                <tr>
+                  <td class="datetime-cell">
+                    {% if transaction.date %}
+                    <div class="date-display">
+                      {{ transaction.date.strftime('%Y-%m-%d') }}
+                    </div>
+                    <div class="time-display">
+                      {{ transaction.date.strftime('%I:%M %p') }}
+                    </div>
+                    {% else %} N/A {% endif %}
+                  </td>
+                  <td>
+                    {% if transaction.type == 'cash_in' %}
+                    <span class="badge bg-success">Cash In</span>
+                    {% else %}
+                    <span class="badge bg-danger">Cash Out</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ transaction.notes or '-' }}</td>
+                  <td>{{ transaction.category or '-' }}</td>
+                  <td
+                    class="{% if transaction.type == 'cash_in' %}amount-cash-in{% else %}amount-cash-out{% endif %}"
+                  >
+                    {% if transaction.type == 'cash_in' %}+{% else %}-{% endif
+                    %}₹{{ "%.2f"|format(transaction.amount) }}
+                  </td>
+                  <td
+                    class="fw-bold {% if running_balance >= 0 %}text-success{% else %}text-danger{% endif %}"
+                  >
+                    ₹{{ "%.2f"|format(running_balance) }}
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <a
+                        href="{{ url_for('edit_transaction', customer_id=customer.id, transaction_id=transaction.id) }}"
+                        class="btn btn-outline-primary btn-action-sm"
+                        data-bs-toggle="tooltip"
+                        title="Edit Transaction"
+                      >
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <button
+                        class="btn btn-outline-danger btn-action-sm delete-transaction-btn"
+                        data-transaction-id="{{ transaction.id }}"
+                        data-transaction-amount="{{ transaction.amount }}"
+                        data-transaction-type="{{ transaction.type }}"
+                        data-transaction-date="{{ transaction.date.strftime('%Y-%m-%d %I:%M %p') if transaction.date else 'N/A' }}"
+                        data-bs-toggle="tooltip"
+                        title="Delete Transaction"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% if transaction.type == 'cash_in' %} {% set running_balance =
+                running_balance - transaction.amount %} {% else %} {% set
+                running_balance = running_balance + transaction.amount %} {%
+                endif %} {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-exchange-alt fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No Transactions Yet</h5>
+            <p class="text-muted">Start by adding your first transaction</p>
+            <div class="d-flex gap-2 justify-content-center">
+              <a
+                href="{{ url_for('add_transaction', customer_id=customer.id) }}?type=cash_in"
+                class="btn btn-cash-in"
+              >
+                <i class="fas fa-plus-circle me-2"></i>Cash In
+              </a>
+              <a
+                href="{{ url_for('add_transaction', customer_id=customer.id) }}?type=cash_out"
+                class="btn btn-cash-out"
+              >
+                <i class="fas fa-minus-circle me-2"></i>Cash Out
+              </a>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Customer Confirmation Modal -->
+<div class="modal fade" id="deleteCustomerModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          Are you sure you want to delete <strong>{{ customer.name }}</strong>?
+        </p>
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-circle me-2"></i>
+          <strong>Warning:</strong> This action cannot be undone. All
+          transaction history for this customer will be permanently deleted.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <form
+          method="POST"
+          action="{{ url_for('delete_customer', customer_id=customer.id) }}"
+          style="display: inline"
+        >
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash me-2"></i>Delete Customer
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Transaction Confirmation Modal -->
+<div class="modal fade" id="deleteTransactionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>Delete Transaction
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this transaction?</p>
+        <div class="transaction-details alert alert-warning">
+          <strong>Transaction Details:</strong><br />
+          <span id="deleteTransactionType"></span> of ₹<span
+            id="deleteTransactionAmount"
+          ></span
+          ><br />
+          Date & Time: <span id="deleteTransactionDate"></span>
+        </div>
+        <div class="alert alert-danger mt-2">
+          <i class="fas fa-exclamation-circle me-2"></i>
+          <strong>Note:</strong> This will update the customer's balance
+          accordingly.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <form id="deleteTransactionForm" method="POST" style="display: inline">
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash me-2"></i>Delete Transaction
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Delete transaction functionality with custom modal
+    const deleteButtons = document.querySelectorAll(".delete-transaction-btn");
+    const deleteModal = new bootstrap.Modal(
+      document.getElementById("deleteTransactionModal")
+    );
+    const deleteForm = document.getElementById("deleteTransactionForm");
+
+    deleteButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        const transactionId = this.getAttribute("data-transaction-id");
+        const amount = this.getAttribute("data-transaction-amount");
+        const type = this.getAttribute("data-transaction-type");
+        const date = this.getAttribute("data-transaction-date");
+
+        // Set transaction details in modal
+        document.getElementById("deleteTransactionType").textContent =
+          type === "cash_in" ? "Cash In" : "Cash Out";
+        document.getElementById("deleteTransactionAmount").textContent = amount;
+        document.getElementById("deleteTransactionDate").textContent = date;
+
+        // Set form action
+        deleteForm.action = `/customer/{{ customer.id }}/transaction/${transactionId}/delete`;
+
+        // Show modal
+        deleteModal.show();
+      });
+    });
+
+    // SweetAlert alternative for delete confirmation (optional)
+    function showSweetAlertConfirmation(transactionId, amount, type, date) {
+      const transactionType = type === "cash_in" ? "Cash In" : "Cash Out";
+
+      Swal.fire({
+        title: "Delete Transaction?",
+        html: `
+        <div class="text-start">
+          <p>Are you sure you want to delete this transaction?</p>
+          <div class="alert alert-warning p-2 mb-2">
+            <strong>Transaction Details:</strong><br>
+            ${transactionType} of ₹${amount}<br>
+            Date & Time: ${date}
+          </div>
+          <div class="alert alert-danger p-2">
+            <i class="fas fa-exclamation-circle me-1"></i>
+            <strong>Note:</strong> This will update the customer's balance accordingly.
+          </div>
+        </div>
+      `,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel",
+        customClass: {
+          popup: "border-radius-12",
+          confirmButton: "btn btn-danger",
+          cancelButton: "btn btn-secondary",
+        },
+        buttonsStyling: false,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Create and submit form
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = `/customer/{{ customer.id }}/transaction/${transactionId}/delete`;
+
+          // Add CSRF token if needed
+          const csrfToken = document.querySelector('meta[name="csrf-token"]');
+          if (csrfToken) {
+            const csrfInput = document.createElement("input");
+            csrfInput.type = "hidden";
+            csrfInput.name = "csrf_token";
+            csrfInput.value = csrfToken.getAttribute("content");
+            form.appendChild(csrfInput);
+          }
+
+          document.body.appendChild(form);
+          form.submit();
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

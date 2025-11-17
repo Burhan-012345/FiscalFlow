@@ -1,0 +1,369 @@
+{% extends "base.html" %} {% block title %}Dashboard - FiscalFlow{% endblock %}
+{% block extra_css %}
+<style>
+  .quick-stats .stat-card {
+    border-left: 4px solid var(--primary-blue);
+  }
+  .cash-in {
+    border-left-color: var(--success) !important;
+  }
+  .cash-out {
+    border-left-color: var(--danger) !important;
+  }
+  .transaction-positive {
+    color: var(--success);
+    font-weight: bold;
+  }
+  .transaction-negative {
+    color: var(--danger);
+    font-weight: bold;
+  }
+  .nav-tabs .nav-link.active {
+    font-weight: 600;
+    border-bottom: 3px solid var(--primary-blue);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container-fluid py-4">
+  <!-- Welcome Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="h3 fw-bold">Welcome back, {{ current_user.name }}! 👋</h1>
+      <p class="text-muted">
+        Here's what's happening with your business today.
+      </p>
+    </div>
+    <div class="col-auto">
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('add_account') }}" class="btn btn-outline-primary">
+          <i class="fas fa-plus me-2"></i>Add Account
+        </a>
+        {% if accounts %}
+        <a
+          href="{{ url_for('add_customer', account_id=accounts[0].id) }}"
+          class="btn btn-primary"
+        >
+          <i class="fas fa-user-plus me-2"></i>Add Customer
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title text-muted">Total Balance</h6>
+              <h3 class="fw-bold text-primary">
+                ₹{{ "%.2f"|format(total_balance) }}
+              </h3>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-wallet fa-2x text-primary"></i>
+            </div>
+          </div>
+          <small class="text-muted"> Across all customers </small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title text-muted">Total Customers</h6>
+              <h3 class="fw-bold text-primary">{{ total_customers }}</h3>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-users fa-2x text-primary"></i>
+            </div>
+          </div>
+          <small class="text-muted"> Active customers </small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stat-card cash-in">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title text-muted">Total Cash In</h6>
+              <h3 class="fw-bold text-success">
+                ₹{{ "%.2f"|format(total_cash_in) }}
+              </h3>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-arrow-down fa-2x text-success"></i>
+            </div>
+          </div>
+          <small class="text-muted"> All time revenue </small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stat-card cash-out">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title text-muted">Total Cash Out</h6>
+              <h3 class="fw-bold text-danger">
+                ₹{{ "%.2f"|format(total_cash_out) }}
+              </h3>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-arrow-up fa-2x text-danger"></i>
+            </div>
+          </div>
+          <small class="text-muted"> All time expenses </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer List with Recent Transactions -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="mb-0"><i class="fas fa-users me-2"></i>All Customers</h5>
+          <div class="btn-group">
+            {% if accounts %}
+            <a
+              href="{{ url_for('add_customer', account_id=accounts[0].id) }}"
+              class="btn btn-primary btn-sm"
+            >
+              <i class="fas fa-plus me-2"></i>Add New
+            </a>
+            {% endif %}
+            <a href="#customerTable" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-list me-2"></i>View All
+            </a>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          {% if customers %}
+          <div class="table-responsive">
+            <table class="table table-hover mb-0" id="customerTable">
+              <thead>
+                <tr>
+                  <th>Customer Name</th>
+                  <th>Contact Info</th>
+                  <th>Current Balance</th>
+                  <th>Last Transaction</th>
+                  <th>Transaction Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for customer in customers %}
+                <tr>
+                  <td>
+                    <a
+                      href="{{ url_for('customer_detail', customer_id=customer.id) }}"
+                      class="text-decoration-none"
+                    >
+                      <strong>{{ customer.name }}</strong>
+                    </a>
+                    <br />
+                    <small class="text-muted"
+                      >{{ customer.category or 'No Category' }}</small
+                    >
+                  </td>
+                  <td>
+                    {% if customer.email %}
+                    <small class="d-block">{{ customer.email }}</small>
+                    {% endif %} {% if customer.phone %}
+                    <small class="text-muted">{{ customer.phone }}</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span
+                      class="{% if customer.current_balance >= 0 %}transaction-positive{% else %}transaction-negative{% endif %}"
+                    >
+                      ₹{{ "%.2f"|format(customer.current_balance) }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if customer._last_transaction %}
+                    <div class="d-flex align-items-center">
+                      {% if customer._last_transaction.type == 'cash_in' %}
+                      <i class="fas fa-arrow-down text-success me-2"></i>
+                      <span class="transaction-positive">
+                        +₹{{ "%.2f"|format(customer._last_transaction.amount) }}
+                      </span>
+                      {% else %}
+                      <i class="fas fa-arrow-up text-danger me-2"></i>
+                      <span class="transaction-negative">
+                        -₹{{ "%.2f"|format(customer._last_transaction.amount) }}
+                      </span>
+                      {% endif %}
+                    </div>
+                    <small class="text-muted">
+                      {{ customer._last_transaction.category or 'General' }}
+                    </small>
+                    {% else %}
+                    <span class="text-muted">No transactions</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if customer._last_transaction and
+                    customer._last_transaction.date %} {{
+                    customer._last_transaction.date.strftime('%Y-%m-%d') if
+                    customer._last_transaction.date else 'N/A' }} {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <a
+                        href="{{ url_for('edit_customer', customer_id=customer.id) }}"
+                        class="btn btn-outline-primary"
+                        data-bs-toggle="tooltip"
+                        title="Edit Customer"
+                      >
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a
+                        href="{{ url_for('add_transaction', customer_id=customer.id) }}?type=cash_in"
+                        class="btn btn-outline-success"
+                        data-bs-toggle="tooltip"
+                        title="Add Transaction"
+                      >
+                        <i class="fas fa-plus"></i>
+                      </a>
+                      <a
+                        href="{{ url_for('customer_detail', customer_id=customer.id) }}"
+                        class="btn btn-outline-info"
+                        data-bs-toggle="tooltip"
+                        title="View Details"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No Customers Yet</h5>
+            <p class="text-muted">
+              Start by adding your first account and customer
+            </p>
+            <div class="d-flex gap-2 justify-content-center">
+              <a
+                href="{{ url_for('add_account') }}"
+                class="btn btn-outline-primary"
+              >
+                <i class="fas fa-plus me-2"></i>Add Account
+              </a>
+              {% if accounts %}
+              <a
+                href="{{ url_for('add_customer', account_id=accounts[0].id) }}"
+                class="btn btn-primary"
+              >
+                <i class="fas fa-user-plus me-2"></i>Add Customer
+              </a>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reports Quick Access -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-chart-bar me-2"></i>Quick Reports
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="d-grid">
+                <a
+                  href="{{ url_for('reports') }}"
+                  class="btn btn-outline-primary"
+                >
+                  <i class="fas fa-chart-pie me-2"></i>View Full Reports
+                </a>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="d-grid">
+                <a
+                  href="{{ url_for('bulk_import') }}"
+                  class="btn btn-outline-success"
+                >
+                  <i class="fas fa-file-import me-2"></i>Bulk Import
+                </a>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="d-grid">
+                <a
+                  href="{{ url_for('settings') }}"
+                  class="btn btn-outline-info"
+                >
+                  <i class="fas fa-cog me-2"></i>Settings
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden admin access for authorized users -->
+{% if current_user.role in ['owner', 'admin'] %}
+<div
+  style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    opacity: 0.1;
+    transition: opacity 0.3s;
+  "
+  onmouseover="this.style.opacity='1'"
+  onmouseout="this.style.opacity='0.1'"
+  id="hiddenAdminAccess"
+>
+  <a
+    href="{{ url_for('secret_admin') }}"
+    class="btn btn-sm btn-outline-secondary"
+    data-bs-toggle="tooltip"
+    title="Secret Admin Access"
+  >
+    <i class="fas fa-user-secret"></i>
+  </a>
+</div>
+{% endif %}
+
+<script>
+  // Initialize tooltips
+  document.addEventListener("DOMContentLoaded", function () {
+    var tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  });
+</script>
+{% endblock %}

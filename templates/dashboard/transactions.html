@@ -1,0 +1,463 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if is_edit %}Edit Transaction{% else %}Add Transaction{% endif %} - {{ customer.name }} - FiscalFlow
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .transaction-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    .form-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .form-card .card-header {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border: none;
+        padding: 1.5rem;
+    }
+    .btn-submit {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+    }
+    .btn-cancel {
+        background: #6c757d;
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .btn-cancel:hover {
+        background: #5a6268;
+        transform: translateY(-1px);
+    }
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #4facfe;
+        box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+    }
+    .transaction-type-badge {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+    }
+    .customer-info-card {
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+    .balance-display {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    .balance-positive {
+        color: #28a745;
+    }
+    .balance-negative {
+        color: #dc3545;
+    }
+    .category-custom-input {
+        display: none;
+        margin-top: 0.5rem;
+    }
+    .datetime-group {
+        display: flex;
+        gap: 15px;
+    }
+    .datetime-group .form-group {
+        flex: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="transaction-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="h2 fw-bold mb-2">
+                    <i class="fas {% if is_edit %}fa-edit{% else %}fa-plus-circle{% endif %} me-2"></i>
+                    {% if is_edit %}Edit Transaction{% else %}Add Transaction{% endif %}
+                </h1>
+                <p class="mb-0 opacity-75">
+                    {% if is_edit %}
+                        Update transaction details for {{ customer.name }}
+                    {% else %}
+                        Add a new {{ transaction_type.replace('_', ' ') }} transaction for {{ customer.name }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-auto">
+                <span class="transaction-type-badge badge {% if transaction_type == 'cash_in' %}bg-success{% else %}bg-danger{% endif %}">
+                    <i class="fas {% if transaction_type == 'cash_in' %}fa-arrow-down{% else %}fa-arrow-up{% endif %} me-1"></i>
+                    {{ transaction_type.replace('_', ' ').title() }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Customer Info -->
+            <div class="customer-info-card mb-4">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="fw-bold mb-1">{{ customer.name }}</h5>
+                        <div class="text-muted small">
+                            {% if customer.email %}{{ customer.email }} • {% endif %}
+                            {% if customer.phone %}{{ customer.phone }} • {% endif %}
+                            {% if customer.category %}{{ customer.category }}{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="text-end">
+                            <div class="text-muted small">Current Balance</div>
+                            <div class="balance-display {% if customer.current_balance >= 0 %}balance-positive{% else %}balance-negative{% endif %}">
+                                ₹{{ "%.2f"|format(customer.current_balance) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Form -->
+            <div class="card form-card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-receipt me-2"></i>
+                        Transaction Details
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" 
+                          action="{% if is_edit %}{{ url_for('edit_transaction', customer_id=customer.id, transaction_id=transaction.id) }}{% else %}{{ url_for('add_transaction', customer_id=customer.id) }}?type={{ transaction_type }}{% endif %}"
+                          enctype="multipart/form-data"
+                          id="transactionForm">
+                        
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <!-- Transaction Type -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Transaction Type</label>
+                                <select class="form-select {% if form.type.errors %}is-invalid{% endif %}" 
+                                        name="type" 
+                                        id="type"
+                                        {% if not is_edit %}disabled{% endif %}>
+                                    <option value="cash_in" {% if form.type.data == 'cash_in' or transaction_type == 'cash_in' %}selected{% endif %}>Cash In</option>
+                                    <option value="cash_out" {% if form.type.data == 'cash_out' or transaction_type == 'cash_out' %}selected{% endif %}>Cash Out</option>
+                                </select>
+                                {% if form.type.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.type.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if not is_edit %}
+                                    <input type="hidden" name="type" value="{{ transaction_type }}">
+                                {% endif %}
+                            </div>
+
+                            <!-- Amount -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Amount (₹)</label>
+                                <input type="number" 
+                                       class="form-control {% if form.amount.errors %}is-invalid{% endif %}" 
+                                       name="amount" 
+                                       id="amount"
+                                       step="0.01"
+                                       min="0.01"
+                                       value="{{ form.amount.data or '' }}"
+                                       required>
+                                {% if form.amount.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.amount.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Date -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Date</label>
+                                <input type="date" 
+                                       class="form-control {% if form.date.errors %}is-invalid{% endif %}" 
+                                       name="date" 
+                                       id="date"
+                                       value="{{ form.date.data.strftime('%Y-%m-%d') if form.date.data else '' }}"
+                                       required>
+                                {% if form.date.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.date.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Time -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Time</label>
+                                <input type="time" 
+                                       class="form-control {% if form.time.errors %}is-invalid{% endif %}" 
+                                       name="time" 
+                                       id="time"
+                                       value="{{ form.time.data.strftime('%H:%M') if form.time.data else '' }}"
+                                       required>
+                                {% if form.time.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.time.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Category -->
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Category</label>
+                                <select class="form-select {% if form.category.errors %}is-invalid{% endif %}" 
+                                        name="category" 
+                                        id="category"
+                                        required>
+                                    <option value="">Select a category...</option>
+                                    <option value="Sales" {% if form.category.data == 'Sales' %}selected{% endif %}>Sales</option>
+                                    <option value="OB" {% if form.category.data == 'OB' %}selected{% endif %}>OB</option>
+                                    <option value="Bank" {% if form.category.data == 'Bank' %}selected{% endif %}>Bank</option>
+                                    <option value="custom">+ Add Custom Category</option>
+                                </select>
+                                <input type="text" 
+                                       class="form-control category-custom-input" 
+                                       name="category_custom" 
+                                       id="category_custom"
+                                       placeholder="Enter custom category">
+                                {% if form.category.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.category.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control {% if form.notes.errors %}is-invalid{% endif %}" 
+                                      name="notes" 
+                                      id="notes"
+                                      rows="3"
+                                      placeholder="Add any additional notes about this transaction...">{{ form.notes.data or '' }}</textarea>
+                            {% if form.notes.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.notes.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Attachment -->
+                        <div class="mb-4">
+                            <label class="form-label">Attachment (Optional)</label>
+                            <input type="file" 
+                                   class="form-control {% if form.attachment.errors %}is-invalid{% endif %}" 
+                                   name="attachment" 
+                                   id="attachment"
+                                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            <div class="form-text">
+                                Supported formats: PDF, JPG, PNG, DOC (Max 5MB)
+                            </div>
+                            {% if form.attachment.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.attachment.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if is_edit and transaction.attachment %}
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        Current attachment: {{ transaction.attachment }}
+                                    </small>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex gap-3 justify-content-end pt-3 border-top">
+                            <a href="{{ url_for('customer_detail', customer_id=customer.id) }}" 
+                               class="btn btn-cancel">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-submit">
+                                <i class="fas {% if is_edit %}fa-save{% else %}fa-plus-circle{% endif %} me-2"></i>
+                                {% if is_edit %}Update Transaction{% else %}Add Transaction{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            {% if not is_edit %}
+            <div class="mt-4 text-center">
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('add_transaction', customer_id=customer.id) }}?type=cash_in" 
+                       class="btn btn-outline-success {% if transaction_type == 'cash_in' %}active{% endif %}">
+                        <i class="fas fa-arrow-down me-2"></i>Switch to Cash In
+                    </a>
+                    <a href="{{ url_for('add_transaction', customer_id=customer.id) }}?type=cash_out" 
+                       class="btn btn-outline-danger {% if transaction_type == 'cash_out' %}active{% endif %}">
+                        <i class="fas fa-arrow-up me-2"></i>Switch to Cash Out
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set current date and time as default if not set
+        const dateField = document.getElementById('date');
+        const timeField = document.getElementById('time');
+        
+        if (dateField && !dateField.value) {
+            const now = new Date();
+            dateField.value = now.toISOString().split('T')[0]; // Get only YYYY-MM-DD
+        }
+        
+        if (timeField && !timeField.value) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            timeField.value = `${hours}:${minutes}`;
+        }
+
+        // Category dropdown functionality
+        const categorySelect = document.getElementById('category');
+        const customCategoryInput = document.getElementById('category_custom');
+
+        categorySelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customCategoryInput.style.display = 'block';
+                customCategoryInput.setAttribute('required', 'required');
+                customCategoryInput.focus();
+            } else {
+                customCategoryInput.style.display = 'none';
+                customCategoryInput.removeAttribute('required');
+                customCategoryInput.value = '';
+            }
+        });
+
+        // Form validation
+        const form = document.getElementById('transactionForm');
+        form.addEventListener('submit', function(e) {
+            const amount = document.getElementById('amount').value;
+            if (!amount || parseFloat(amount) <= 0) {
+                e.preventDefault();
+                alert('Please enter a valid amount greater than 0.');
+                return false;
+            }
+
+            const category = document.getElementById('category').value;
+            if (!category.trim()) {
+                e.preventDefault();
+                alert('Please select a category for this transaction.');
+                return false;
+            }
+
+            // If custom category is selected, use that value
+            if (category === 'custom') {
+                const customCategory = customCategoryInput.value.trim();
+                if (!customCategory) {
+                    e.preventDefault();
+                    alert('Please enter a custom category.');
+                    return false;
+                }
+                // Set the custom category value to the main category field
+                categorySelect.value = customCategory;
+            }
+        });
+
+        // Amount field formatting
+        const amountField = document.getElementById('amount');
+        amountField.addEventListener('blur', function() {
+            if (this.value) {
+                this.value = parseFloat(this.value).toFixed(2);
+            }
+        });
+
+        // Show file name for attachment
+        const attachmentField = document.getElementById('attachment');
+        attachmentField.addEventListener('change', function() {
+            const fileName = this.files[0]?.name;
+            if (fileName) {
+                const fileText = this.nextElementSibling;
+                if (fileText && fileText.classList.contains('form-text')) {
+                    fileText.textContent = `Selected file: ${fileName}`;
+                }
+            }
+        });
+
+        // Initialize category display
+        if (categorySelect.value && categorySelect.value !== 'custom') {
+            customCategoryInput.style.display = 'none';
+        } else if (categorySelect.value === 'custom') {
+            customCategoryInput.style.display = 'block';
+        }
+
+        // If there's a custom category value from the database, show the custom input
+        const currentCategory = "{{ form.category.data or '' }}";
+        if (currentCategory && !categorySelect.querySelector(`option[value="${currentCategory}"]`)) {
+            categorySelect.value = 'custom';
+            customCategoryInput.style.display = 'block';
+            customCategoryInput.value = currentCategory;
+        }
+    });
+</script>
+{% endblock %}

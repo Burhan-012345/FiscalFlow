@@ -1,0 +1,64 @@
+{% extends "base.html" %} {% block title %}Add Account - FiscalFlow{% endblock
+%} {% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card fade-in">
+        <div class="card-header text-center">
+          <h4 class="mb-0">
+            <i class="fas fa-plus-circle me-2"></i>Create Your First Account
+          </h4>
+        </div>
+        <div class="card-body p-4">
+          <p class="text-muted text-center mb-4">
+            Let's start by creating your first business account. You can add
+            more accounts later.
+          </p>
+
+          <form method="POST" action="{{ url_for('add_account') }}">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              <label for="name" class="form-label">Account Name</label>
+              {{ form.name(class="form-control", id="name", placeholder="e.g.,
+              Main Business Account") }} {% if form.name.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in form.name.errors %} {{ error }} {% endfor %}
+              </div>
+              {% endif %}
+              <div class="form-text">Give your account a descriptive name</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label"
+                >Description (Optional)</label
+              >
+              {{ form.description(class="form-control", id="description",
+              placeholder="Brief description of this account", rows="3") }}
+            </div>
+
+            <!-- Hidden currency field with INR as default -->
+            <input type="hidden" name="currency" value="INR" />
+
+            <div class="mb-4">
+              <label class="form-label">Currency</label>
+              <div class="form-control" style="background-color: #f8f9fa">
+                Indian Rupee (₹) - Default
+              </div>
+              <div class="form-text">
+                All accounts use Indian Rupees as currency
+              </div>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-lg">
+                Create Account <i class="fas fa-arrow-right ms-2"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
